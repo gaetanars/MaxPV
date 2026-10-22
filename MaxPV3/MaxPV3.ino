@@ -1757,7 +1757,6 @@ void onMqttConnect(bool sessionPresent)
 
 void onMqttDisconnect(AsyncMqttClientDisconnectReason reason)
 {
-  mqttClient.clearQueue();
   mqttReconnectTimer.once(RECONNECT_TIME, mqttConnect);
 }
 
