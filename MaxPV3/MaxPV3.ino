@@ -700,7 +700,8 @@ bool configRead(const String& configString)
         if (jsonConfig.containsKey("mqtt_port"))          mqttPort = configBounded(jsonConfig["mqtt_port"], 1, 65535); else shouldSaveConfig = true;
         if (jsonConfig.containsKey("mqtt_period"))        mqttPeriod = configBounded(jsonConfig["mqtt_period"], 1, 3600); else shouldSaveConfig = true;
         if (jsonConfig.containsKey("mqtt_user"))          mqttUser = jsonConfig["mqtt_user"].as<String>(); else shouldSaveConfig = true;
-        if (jsonConfig.containsKey("mqtt_user"))          mqttPass = jsonConfig["mqtt_pass"].as<String>(); else shouldSaveConfig = true;
+        if (jsonConfig.containsKey("mqtt_pass")) { String p = jsonConfig["mqtt_pass"].as<String>(); if (p.length() > 0) mqttPass = p; } else shouldSaveConfig = true;
+        if (mqttUser.length() == 0) mqttPass = DEFAUT_EMPTY_PWD;
         if (jsonConfig.containsKey("mqtt_active"))        mqttActive = jsonConfig["mqtt_active"]; else shouldSaveConfig = true;
         if (jsonConfig.containsKey("boost_timer_hour"))   boostTimerHour = configBounded(jsonConfig["boost_timer_hour"], 0, 23); else shouldSaveConfig = true;
         if (jsonConfig.containsKey("boost_timer_minute")) boostTimerMinute = configBounded(jsonConfig["boost_timer_minute"], 0, 59); else shouldSaveConfig = true;
@@ -734,11 +735,8 @@ bool configRead(const String& configString)
 // directement dans le fichier config.json                       //
 ///////////////////////////////////////////////////////////////////
 
-void configWrite(void)
+void configFill(DynamicJsonDocument &jsonConfig)
 {
-  // buffer pour manipuler le fichier de configuration de MaxPV!
-  DynamicJsonDocument jsonConfig(JSON_CONFIG_SIZE);
-
   jsonConfig["ip"] = static_ip;
   jsonConfig["gateway"] = static_gw;
   jsonConfig["subnet"] = static_sn;
@@ -768,6 +766,27 @@ void configWrite(void)
   jsonConfig["RelayPlus_active"] = relayPlusActive;
   jsonConfig["max_temp"] = maxTemp;
   jsonConfig["temp_limit_active"] = tempLimitActive;
+}
+
+void sendConfig(AsyncWebServerRequest *request, bool download)
+{
+  // le mot de passe MQTT ne sort jamais en HTTP
+  DynamicJsonDocument jsonConfig(JSON_CONFIG_SIZE);
+  configFill(jsonConfig);
+  jsonConfig.remove("mqtt_pass");
+  AsyncResponseStream *response = request->beginResponseStream("application/json");
+  if (download)
+    response->addHeader("Content-Disposition", "attachment; filename=\"config.json\"");
+  serializeJson(jsonConfig, *response);
+  request->send(response);
+}
+
+void configWrite(void)
+{
+  // buffer pour manipuler le fichier de configuration de MaxPV!
+  DynamicJsonDocument jsonConfig(JSON_CONFIG_SIZE);
+
+  configFill(jsonConfig);
 
   if (jsonConfig.overflowed())
   {
@@ -2076,7 +2095,7 @@ void setWebHandlers (void) {
   // Download le fichier de configuration de MaxPV!
   webServer.on("/DLconfig", HTTP_ANY, [](AsyncWebServerRequest * request)
   {
-    request->send(LittleFS, F("/config.json"), String(), true);
+    sendConfig(request, true);
   });
 
   delay(5);
@@ -2125,7 +2144,7 @@ void setWebHandlers (void) {
   {
     String response = "";
     if ( request->hasParam ( F("configmaxpv") ) )
-      request->send ( LittleFS, F("/config.json"), "text/plain" );
+      sendConfig(request, false);
     else if ( request->hasParam ( F("versionweb") ) )
       request->send ( LittleFS, F("/versionweb.txt"), "text/plain" );
     else {

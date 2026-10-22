@@ -156,7 +156,7 @@
                     <div class="col-6">
                         <label for="mqtt_pass" class="form-label">Mot de passe (opt.)</label>
                         <input type="password" class="form-control text-center"
-                            id="mqtt_pass" placeholder="" maxlength="39">
+                            id="mqtt_pass" placeholder="inchangé si vide" maxlength="39">
                     </div>
                 </div>
                 <div class="row mb-3">
@@ -367,7 +367,6 @@
                     document.getElementById("mqtt_port").value = doc["mqtt_port"];
                     document.getElementById("mqtt_period").value = doc["mqtt_period"];
                     document.getElementById("mqtt_user").value = doc["mqtt_user"];
-                    document.getElementById("mqtt_pass").value = doc["mqtt_pass"];
                     if (doc["mqtt_active"] == "1") mqtt_active.checked = true;
                     else mqtt_active.checked = false;
                     document.getElementById("boost_timer_hour").value = doc["boost_timer_hour"];
