@@ -153,6 +153,11 @@ Les pins d'entrée-sortie de l'Arduino Nano sont configurables dans le code EcoP
 
 La pin D9 est utilisé pour la sonde de température 1-Wire depuis la version 3.60.
 
+## Licence
+* Le code de MaxPV! est distribué sous licence LGPL 2.1+.
+* Le firmware du Wemos embarque ElegantOTA (AGPL-3.0).
+* Les binaires de firmware distribués sont de ce fait soumis à l'AGPL-3.0.
+
 # Versions
 ### **V 3.63** - 16/05/2026
 * Correction des sources script pour affichage des graphiques.
