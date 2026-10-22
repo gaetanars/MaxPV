@@ -9,3 +9,4 @@ date | step | result
 2026-10-22 19:30:48 | stop | ÉCHEC PARTIEL, PR draft
 2026-10-22 19:54:29 | déblocage F2 | AsyncMQTT_Generic (archivé, tire un fork git d'ESPAsyncTCP) -> heman/AsyncMqttClient-esphome 2.1.0 (MIT, même API, ESPHome, 2024) ; AsyncHTTPRequest_Generic (archivé, GPL-3.0, tire WiFiManager/AsyncTCP/STM32) -> boblemaire/asyncHTTPrequest 1.2.2 (LGPL-3.0, original dont Generic est le fork ; classe asyncHTTPrequest, états 0/4 car enum privé) ; lib_ignore ESPAsyncTCP-esphome (dépendance transitive, doublon d'esp32async/ESPAsyncTCP) ; STM32AsyncTCP n'est plus tiré
 2026-10-22 19:56:23 | CI | clearQueue() absent du fork ESPHome ; supprimé (la file est vidée par _onDisconnect -> _clear())
+2026-10-22 20:00:17 | CI | run 39827035122 vert (build + variante FTP + EcoPV + amorce, lint). Flash 514895 -> 475981 o, RAM 40368 -> 40620 o. Portail ElegantOTA décompressé : aucune ressource CDN ni télémétrie, seul lien https://elegantota.pro
