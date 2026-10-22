@@ -10,8 +10,10 @@
       "awk '/^void loop\\(\\)/,/^}/' MaxPV3/MaxPV3.ino | grep -q 'ElegantOTA.loop()'",
       "git diff --quiet main -- EcoPV3 amorceESP 'MaxPV3/*.h'"
     ],
-    "tests": [],
-    "passes": false
+    "tests": [
+      "scripts/test_elegantota_v4.py:F1"
+    ],
+    "passes": true
   },
   {
     "id": "F2",
@@ -27,7 +29,9 @@
       "test \"$(.venv/bin/pio pkg list -e d1_mini | grep -cE 'ESPAsyncWebServer @')\" -eq 1",
       "test \"$(.venv/bin/pio pkg list -e d1_mini | grep -cE 'ESPAsyncTCP @')\" -eq 1"
     ],
-    "tests": [],
+    "tests": [
+      "scripts/test_elegantota_v4.py:F2"
+    ],
     "passes": false
   },
   {
@@ -51,8 +55,10 @@
       "awk '/^## Licence/,0' README.md | grep -q 'AGPL-3.0'",
       "awk '/^## Licence/,0' README.md | grep -q 'LGPL 2.1'"
     ],
-    "tests": [],
-    "passes": false
+    "tests": [
+      "scripts/test_elegantota_v4.py:F4"
+    ],
+    "passes": true
   },
   {
     "id": "F5",
@@ -65,8 +71,10 @@
       ".venv/bin/python -I scripts/check_versions.py",
       "actionlint"
     ],
-    "tests": [],
-    "passes": false
+    "tests": [
+      "scripts/test_elegantota_v4.py:F5"
+    ],
+    "passes": true
   },
   {
     "id": "F6",
