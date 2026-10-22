@@ -55,6 +55,15 @@ jobs:
         run: pio run -e d1_mini
       - name: Build ESP filesystem
         run: pio run -t buildfs -e d1_mini
+      - name: Build ESP full image
+        working-directory: .pio/build/d1_mini
+        run: |
+          python -m pip install esptool==5.6.0
+          fw=$(ls MaxPV*_firmware.bin)
+          base=${fw%_firmware.bin}
+          esptool --chip esp8266 merge-bin -o "${base}_full.bin" 0x0 "$fw" 0x300000 "${base}_filesystem.bin"
+          expected=$((0x300000 + $(stat -c %s "${base}_filesystem.bin")))
+          test "$(stat -c %s "${base}_full.bin")" -eq "$expected"
       - name: Upload build artifacts
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
@@ -75,8 +84,6 @@ jobs:
         run: pio ci EcoPV3/EcoPV3.ino --project-conf ci/ecopv.ini -e nano
       - name: Build EcoPV (Nano, écran oLed)
         run: pio ci EcoPV3/EcoPV3.ino --project-conf ci/ecopv.ini -e nano_oled
-      - name: Build amorceESP
-        run: pio ci amorceESP/amorceESP.ino --project-conf ci/amorce.ini -e amorce
 
       - name: Static analysis (non bloquant)
         continue-on-error: true
@@ -106,8 +113,9 @@ jobs:
         run: |
           cp MaxPV*_firmware.bin MaxPV3_firmware.bin
           cp MaxPV*_filesystem.bin MaxPV3_filesystem.bin
+          cp MaxPV*_full.bin MaxPV3_full.bin
           ls -l
-          test "$(find . -maxdepth 1 -name "*.bin" | wc -l)" -eq 4
+          test "$(find . -maxdepth 1 -name "*.bin" | wc -l)" -eq 6
       - name: Publish release
         working-directory: dist
         env:
@@ -116,4 +124,4 @@ jobs:
           TAG: ${{ github.ref_name }}
         run: |
           gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --verify-tag --generate-notes
-          gh release upload "$TAG" MaxPV*_firmware.bin MaxPV*_filesystem.bin --clobber
+          gh release upload "$TAG" MaxPV*_firmware.bin MaxPV*_filesystem.bin MaxPV*_full.bin --clobber
