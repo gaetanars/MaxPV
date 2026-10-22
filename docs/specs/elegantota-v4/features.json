@@ -32,7 +32,7 @@
     "tests": [
       "scripts/test_elegantota_v4.py:F2"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "F3",
@@ -42,8 +42,10 @@
       "gh pr checks --watch --fail-fast retourne 0 sur la PR draft agent/elegantota-v4",
       "le log du job build contient l'étape variante FTP en succès (gh run view --log | grep -q 'MAXPV_FTP_SERVER')"
     ],
-    "tests": [],
-    "passes": false
+    "tests": [
+      "CI PR run 39827035122 : build, lint verts"
+    ],
+    "passes": true
   },
   {
     "id": "F4",
@@ -85,7 +87,9 @@
       "gh pr view --json body -q .body | grep -qi 'ressources externes'",
       "gh pr view --json body -q .body | grep -qi 'test matériel'"
     ],
-    "tests": [],
-    "passes": false
+    "tests": [
+      "gh pr view : corps contenant Flash, RAM, ressources externes, test matériel"
+    ],
+    "passes": true
   }
 ]
