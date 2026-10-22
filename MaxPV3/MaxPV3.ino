@@ -649,6 +649,23 @@ void setTsTasks (void) {
 ///////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////
+// Lecture d'une valeur numérique de la configuration            //
+// La valeur est ramenée dans les bornes [minVal, maxVal]        //
+// (celles du formulaire admin.html). Si elle a été corrigée,    //
+// la configuration sera réécrite (shouldSaveConfig)             //
+///////////////////////////////////////////////////////////////////
+
+long configBounded(JsonVariantConst value, long minVal, long maxVal)
+{
+  long v = value.as<long>();
+  if ((v < minVal) || (v > maxVal)) {
+    shouldSaveConfig = true;
+    return constrain(v, minVal, maxVal);
+  }
+  return v;
+}
+
+///////////////////////////////////////////////////////////////////
 // Lecture de la configuration à partir d'une chaîne             //
 // de caractères en JSON                                         //
 // Fonction utilisée au démarrage initial et lorsque             //
@@ -674,29 +691,29 @@ bool configRead(const String& configString)
         if (jsonConfig.containsKey("subnet"))             static_sn = jsonConfig["subnet"].as<String>(); else shouldSaveConfig = true;
         if (jsonConfig.containsKey("dns1"))               static_dns1 = jsonConfig["dns1"].as<String>(); else shouldSaveConfig = true;
         if (jsonConfig.containsKey("dns2"))               static_dns2 = jsonConfig["dns2"].as<String>(); else shouldSaveConfig = true;
-        if (jsonConfig.containsKey("http_port"))          httpPort = jsonConfig["http_port"]; else shouldSaveConfig = true;
+        if (jsonConfig.containsKey("http_port"))          httpPort = configBounded(jsonConfig["http_port"], 1, 65535); else shouldSaveConfig = true;
         if (jsonConfig.containsKey("watchdogwifi_active"))  wtdWifiActive = jsonConfig["watchdogwifi_active"]; else shouldSaveConfig = true;
-        if (jsonConfig.containsKey("boost_duration"))     boostDuration = jsonConfig["boost_duration"]; else shouldSaveConfig = true;
-        if (jsonConfig.containsKey("boost_ratio"))        boostRatio = jsonConfig["boost_ratio"]; else shouldSaveConfig = true;
+        if (jsonConfig.containsKey("boost_duration"))     boostDuration = configBounded(jsonConfig["boost_duration"], 10, 600); else shouldSaveConfig = true;
+        if (jsonConfig.containsKey("boost_ratio"))        boostRatio = configBounded(jsonConfig["boost_ratio"], 0, 100); else shouldSaveConfig = true;
         if (jsonConfig.containsKey("mqtt_ip"))            mqttIP = jsonConfig["mqtt_ip"].as<String>(); else shouldSaveConfig = true;
-        if (jsonConfig.containsKey("mqtt_port"))          mqttPort = jsonConfig["mqtt_port"]; else shouldSaveConfig = true;
-        if (jsonConfig.containsKey("mqtt_period"))        mqttPeriod = jsonConfig["mqtt_period"]; else shouldSaveConfig = true;
+        if (jsonConfig.containsKey("mqtt_port"))          mqttPort = configBounded(jsonConfig["mqtt_port"], 1, 65535); else shouldSaveConfig = true;
+        if (jsonConfig.containsKey("mqtt_period"))        mqttPeriod = configBounded(jsonConfig["mqtt_period"], 1, 3600); else shouldSaveConfig = true;
         if (jsonConfig.containsKey("mqtt_user"))          mqttUser = jsonConfig["mqtt_user"].as<String>(); else shouldSaveConfig = true;
         if (jsonConfig.containsKey("mqtt_user"))          mqttPass = jsonConfig["mqtt_pass"].as<String>(); else shouldSaveConfig = true;
         if (jsonConfig.containsKey("mqtt_active"))        mqttActive = jsonConfig["mqtt_active"]; else shouldSaveConfig = true;
-        if (jsonConfig.containsKey("boost_timer_hour"))   boostTimerHour = jsonConfig["boost_timer_hour"]; else shouldSaveConfig = true;
-        if (jsonConfig.containsKey("boost_timer_minute")) boostTimerMinute = jsonConfig["boost_timer_minute"]; else shouldSaveConfig = true;
+        if (jsonConfig.containsKey("boost_timer_hour"))   boostTimerHour = configBounded(jsonConfig["boost_timer_hour"], 0, 23); else shouldSaveConfig = true;
+        if (jsonConfig.containsKey("boost_timer_minute")) boostTimerMinute = configBounded(jsonConfig["boost_timer_minute"], 0, 59); else shouldSaveConfig = true;
         if (jsonConfig.containsKey("boost_timer_active")) boostTimerActive = jsonConfig["boost_timer_active"]; else shouldSaveConfig = true;
         if (jsonConfig.containsKey("remoterelay_active")) relaisDistantActive = jsonConfig["remoterelay_active"]; else shouldSaveConfig = true;
         if (jsonConfig.containsKey("remoterelay_ip"))     relaisDistantIP = jsonConfig["remoterelay_ip"].as<String>(); else shouldSaveConfig = true;
-        if (jsonConfig.containsKey("remoterelay_port"))   relaisDistantPort = jsonConfig["remoterelay_port"]; else shouldSaveConfig = true;
+        if (jsonConfig.containsKey("remoterelay_port"))   relaisDistantPort = configBounded(jsonConfig["remoterelay_port"], 1, 65535); else shouldSaveConfig = true;
         if (jsonConfig.containsKey("remoterelay_on"))     relaisDistantOn = jsonConfig["remoterelay_on"].as<String>(); else shouldSaveConfig = true;
         if (jsonConfig.containsKey("remoterelay_off"))    relaisDistantOff = jsonConfig["remoterelay_off"].as<String>(); else shouldSaveConfig = true;
-        if (jsonConfig.containsKey("RelayPlus_min"))      relayPlusMin = jsonConfig["RelayPlus_min"]; else shouldSaveConfig = true;
-        if (jsonConfig.containsKey("RelayPlus_max"))      relayPlusMax = jsonConfig["RelayPlus_max"]; else shouldSaveConfig = true;
-        if (jsonConfig.containsKey("RelayPlus_hour"))     relayPlusHour = jsonConfig["RelayPlus_hour"]; else shouldSaveConfig = true;
+        if (jsonConfig.containsKey("RelayPlus_min"))      relayPlusMin = configBounded(jsonConfig["RelayPlus_min"], 5, 1200); else shouldSaveConfig = true;
+        if (jsonConfig.containsKey("RelayPlus_max"))      relayPlusMax = configBounded(jsonConfig["RelayPlus_max"], 10, 1380); else shouldSaveConfig = true;
+        if (jsonConfig.containsKey("RelayPlus_hour"))     relayPlusHour = configBounded(jsonConfig["RelayPlus_hour"], 0, 23); else shouldSaveConfig = true;
         if (jsonConfig.containsKey("RelayPlus_active"))   relayPlusActive = jsonConfig["RelayPlus_active"]; else shouldSaveConfig = true;
-        if (jsonConfig.containsKey("max_temp"))           maxTemp = jsonConfig["max_temp"]; else shouldSaveConfig = true;
+        if (jsonConfig.containsKey("max_temp"))           maxTemp = configBounded(jsonConfig["max_temp"], 15, 90); else shouldSaveConfig = true;
         if (jsonConfig.containsKey("temp_limit_active"))  tempLimitActive = jsonConfig["temp_limit_active"]; else shouldSaveConfig = true;
 
         // traitement des durées min et max du mode RelayPlus
