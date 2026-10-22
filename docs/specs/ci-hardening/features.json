@@ -142,7 +142,9 @@
     "criteres_acceptation": [
       "test \"$(gh run list --branch agent/ci-hardening --event pull_request -L 1 --json conclusion -q '.[0].conclusion')\" = success (après gh run watch)"
     ],
-    "tests": [],
-    "passes": false
+    "tests": [
+      "run pull_request #39809527154 success"
+    ],
+    "passes": true
   }
 ]
