@@ -53,8 +53,8 @@
 #include <WiFiUdp.h>
 #include <ESPAsyncWebServer.h>
 #include <ESPAsyncWiFiManager.h>
-#include <AsyncMqtt_Generic.h>
-#include <AsyncHTTPRequest_Generic.h> 
+#include <AsyncMqttClient.h>
+#include <asyncHTTPrequest.h>
 #include <ElegantOTA.h>
 #include <Ticker.h>
 #include <TickerScheduler.h>
@@ -216,7 +216,7 @@ int relaisPlusCountDown = -1;   // compte à rebours de la durée d'une journée
 
 AsyncWebServer    webServer(HTTP_PORT);
 AsyncMqttClient   mqttClient;
-AsyncHTTPRequest  remoteRelayRequest;
+asyncHTTPrequest  remoteRelayRequest;
 AsyncPing ping;
 
 #if defined (MAXPV_FTP_SERVER)
@@ -1913,7 +1913,7 @@ void remoteRelay ( int state )
   
   logMqtt ( F("[ESP]"), F("Synchronisation du relais distant") );
   
-  if (remoteRelayRequest.readyState() == readyStateUnsent || remoteRelayRequest.readyState() == readyStateDone)
+  if (remoteRelayRequest.readyState() == 0 || remoteRelayRequest.readyState() == 4)
   {
     requestOpenResult = remoteRelayRequest.open("GET", urlCommand.c_str());
     if (requestOpenResult)  {
