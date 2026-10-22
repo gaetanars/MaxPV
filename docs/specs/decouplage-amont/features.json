@@ -1,0 +1,93 @@
+[
+  {
+    "id": "F1",
+    "description": "La vérification de mise à jour lit latest sur le fork gaetanars/MaxPV",
+    "criteres_acceptation": [
+      "test \"$(grep -c 'const urlVersion = \"https://raw.githubusercontent.com/gaetanars/MaxPV/main/latest\";' MaxPV3/data/main.html)\" -eq 1",
+      "! grep -n 'Jetblack31' MaxPV3/data/main.html"
+    ],
+    "tests": [
+      "criteres_acceptation (grep/python) exécutés, rc=0"
+    ],
+    "passes": true
+  },
+  {
+    "id": "F2",
+    "description": "P3-4 : le message de version (données distantes incluses) est rendu en textContent, avec sauts de ligne via white-space: pre-line",
+    "criteres_acceptation": [
+      "! grep -n 'livemsg\").innerHTML' MaxPV3/data/main.html",
+      "test \"$(grep -c 'livemsg\").textContent' MaxPV3/data/main.html)\" -ge 2",
+      "grep -n 'id=\"livemsg\"' MaxPV3/data/main.html | grep -q 'white-space: pre-line'",
+      "! grep -nE 'messageVersion \\+?= .*<br>' MaxPV3/data/main.html",
+      "! grep -nE 'outerHTML|insertAdjacentHTML|document\\.write' MaxPV3/data/main.html"
+    ],
+    "tests": [
+      "criteres_acceptation (grep/python) exécutés, rc=0"
+    ],
+    "passes": true
+  },
+  {
+    "id": "F3",
+    "description": "latest : JSON valide, versions inchangées, whatsnew en texte brut sans référence amont",
+    "criteres_acceptation": [
+      ".venv/bin/python -I -c \"import json; d=json.load(open('latest')); assert (d['ecopvver'], d['maxpvver'], d['webver']) == ('3.60', '3.61', '3.63'); w=d['whatsnew']; assert '<' not in w and '>' not in w and 'Jetblack31' not in w and 'gaetanars/MaxPV' in w\"",
+      ".venv/bin/python -I scripts/check_versions.py"
+    ],
+    "tests": [
+      "criteres_acceptation (grep/python) exécutés, rc=0"
+    ],
+    "passes": true
+  },
+  {
+    "id": "F4",
+    "description": "Liens : aide et Plus d'informations vers le fork, attribution et aide EcoPV conservées",
+    "criteres_acceptation": [
+      "grep -n 'Aide disponible' MaxPV3/data/main.html | grep -q 'https://github.com/gaetanars/MaxPV'",
+      "sed -n '/Plus d.informations sur/,/<\\/a>/p' MaxPV3/data/credits.html | grep -q 'href=\"https://github.com/gaetanars/MaxPV\"'",
+      "test \"$(grep -c 'Jetblack31' MaxPV3/data/credits.html)\" -eq 2",
+      "grep -q 'https://github.com/Jetblack31/EcoPV\" target=\"_blank\">https://github.com/Jetblack31/EcoPV</a><br>' MaxPV3/data/credits.html",
+      "git diff --quiet main -- MaxPV3/data/configuration.html README.md"
+    ],
+    "tests": [
+      "criteres_acceptation (grep/python) exécutés, rc=0"
+    ],
+    "passes": true
+  },
+  {
+    "id": "F5",
+    "description": "PayPal amont retiré de l'UI et de FUNDING.yml",
+    "criteres_acceptation": [
+      "! grep -rni 'paypal' MaxPV3/data .github",
+      "test ! -e .github/FUNDING.yml",
+      "! grep -n 'Je soutiens' MaxPV3/data/main.html MaxPV3/data/credits.html"
+    ],
+    "tests": [
+      "criteres_acceptation (grep/python) exécutés, rc=0"
+    ],
+    "passes": true
+  },
+  {
+    "id": "F6",
+    "description": "CLAUDE.md : latest lu sur le fork, origine du fork documentée",
+    "criteres_acceptation": [
+      "grep -n 'raw.githubusercontent.com' CLAUDE.md | grep -q 'gaetanars/MaxPV'",
+      "! grep -n 'dépôt Jetblack31/MaxPV' CLAUDE.md",
+      "! grep -n 'Dépôt amont' CLAUDE.md",
+      "grep -q 'Origine : fork de Jetblack31/MaxPV' CLAUDE.md"
+    ],
+    "tests": [
+      "criteres_acceptation (grep/python) exécutés, rc=0"
+    ],
+    "passes": true
+  },
+  {
+    "id": "F7",
+    "description": "Périmètre respecté et build vert",
+    "criteres_acceptation": [
+      "test -z \"$(git diff --name-only main -- '*.ino' '*.h' .github/workflows)\"",
+      "Run GitHub Actions de la PR vert (lint + build, dont buildfs)"
+    ],
+    "tests": [],
+    "passes": false
+  }
+]

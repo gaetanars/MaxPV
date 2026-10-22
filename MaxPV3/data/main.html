@@ -56,7 +56,7 @@
             <h1>Bienvenue sur MaxPV!</h1>
             <p class="lead">
             <h4></h4>
-            <span id="livemsg"><br></span>
+            <span id="livemsg" style="white-space: pre-line"></span>
             <span class="text-warning" id="ecopvstate">Connexion à l'Arduino Nano...<br></span>
             <br>
 
@@ -83,12 +83,7 @@
             <span>L'actualisation des états après modification peut prendre quelques secondes.</span>
             </p>
             
-            <div>
-                <br>
-                <a href="https://paypal.me/EcoPV" target="_blank"><button type="button" class="btn btn-success col-6">Je soutiens MaxPV!</button></a>
-                <br><br>
-            </div>
-            Aide disponible <a href="https://github.com/Jetblack31/MaxPV" target="_blank">ici</a><br>
+            Aide disponible <a href="https://github.com/gaetanars/MaxPV" target="_blank">ici</a><br>
             
             <div>
                 EcoPV <span id="ecopvver"></span><span> | </span>
@@ -104,7 +99,7 @@
 
         function fillVersion() {
 
-            const urlVersion = "https://raw.githubusercontent.com/Jetblack31/MaxPV/main/latest";
+            const urlVersion = "https://raw.githubusercontent.com/gaetanars/MaxPV/main/latest";
             var messageVersion = "";
             var maj = false;
             var xhttp1 = new XMLHttpRequest();
@@ -116,7 +111,7 @@
             var result3 = "";
             var result4 = "";
 
-            document.getElementById("livemsg").innerHTML = "Recherche de mise à jour...<br>";
+            document.getElementById("livemsg").textContent = "Recherche de mise à jour...\n";
             document.getElementById("livemsg").className = "text-warning";
 
             xhttp1.open("GET", "api/get?version", true);
@@ -159,25 +154,25 @@
                     }
                     if ( result4["maxpvver"] != result2 ) {
                         maj = true;
-                        messageVersion += "<br>Le firmware du Wemos peut être mis à jour vers ";
+                        messageVersion += "\nLe firmware du Wemos peut être mis à jour vers ";
                         messageVersion += result4["maxpvver"];
                     }
                     if ( result4["webver"] != result3 ) {
                         maj = true;
-                        messageVersion += "<br>Le site Web peut être mis à jour vers ";
+                        messageVersion += "\nLe site Web peut être mis à jour vers ";
                         messageVersion += result4["webver"];
                     }
                     if ( maj == true ) {
-                        messageVersion += "<br>";
+                        messageVersion += "\n";
                         messageVersion += result4["whatsnew"];
-                        messageVersion += "<br>";
+                        messageVersion += "\n";
                         document.getElementById("livemsg").className = "text-danger";
                     }
                     else {
                         document.getElementById("livemsg").className = "text-success";
-                        messageVersion += "Le système est à jour !<br>";
+                        messageVersion += "Le système est à jour !\n";
                     }
-                    document.getElementById("livemsg").innerHTML = messageVersion;
+                    document.getElementById("livemsg").textContent = messageVersion;
                 }
             };
         }
