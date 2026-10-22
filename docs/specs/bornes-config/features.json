@@ -1,0 +1,50 @@
+[
+  {
+    "id": "F1",
+    "description": "Helper configBounded() : lit une valeur numérique, la borne et lève shouldSaveConfig si elle a été corrigée",
+    "criteres_acceptation": [
+      "grep -qF 'long configBounded(JsonVariantConst value, long minVal, long maxVal)' MaxPV3/MaxPV3.ino",
+      "grep -qF 'return constrain(v, minVal, maxVal);' MaxPV3/MaxPV3.ino",
+      "test \"$(grep -n 'long configBounded(' MaxPV3/MaxPV3.ino | cut -d: -f1)\" -lt \"$(grep -n '^bool configRead(' MaxPV3/MaxPV3.ino | cut -d: -f1)\""
+    ],
+    "tests": [
+      "grep F1 (3 critères)"
+    ],
+    "passes": true
+  },
+  {
+    "id": "F2",
+    "description": "configRead() borne les 12 champs numériques sur les min/max d'admin.html",
+    "criteres_acceptation": [
+      "grep -qF 'httpPort = configBounded(jsonConfig[\"http_port\"], 1, 65535);' MaxPV3/MaxPV3.ino",
+      "grep -qF 'mqttPort = configBounded(jsonConfig[\"mqtt_port\"], 1, 65535);' MaxPV3/MaxPV3.ino",
+      "grep -qF 'mqttPeriod = configBounded(jsonConfig[\"mqtt_period\"], 1, 3600);' MaxPV3/MaxPV3.ino",
+      "grep -qF 'relaisDistantPort = configBounded(jsonConfig[\"remoterelay_port\"], 1, 65535);' MaxPV3/MaxPV3.ino",
+      "grep -qF 'boostDuration = configBounded(jsonConfig[\"boost_duration\"], 10, 600);' MaxPV3/MaxPV3.ino",
+      "grep -qF 'boostRatio = configBounded(jsonConfig[\"boost_ratio\"], 0, 100);' MaxPV3/MaxPV3.ino",
+      "grep -qF 'boostTimerHour = configBounded(jsonConfig[\"boost_timer_hour\"], 0, 23);' MaxPV3/MaxPV3.ino",
+      "grep -qF 'boostTimerMinute = configBounded(jsonConfig[\"boost_timer_minute\"], 0, 59);' MaxPV3/MaxPV3.ino",
+      "grep -qF 'relayPlusMin = configBounded(jsonConfig[\"RelayPlus_min\"], 5, 1200);' MaxPV3/MaxPV3.ino",
+      "grep -qF 'relayPlusMax = configBounded(jsonConfig[\"RelayPlus_max\"], 10, 1380);' MaxPV3/MaxPV3.ino",
+      "grep -qF 'relayPlusHour = configBounded(jsonConfig[\"RelayPlus_hour\"], 0, 23);' MaxPV3/MaxPV3.ino",
+      "grep -qF 'maxTemp = configBounded(jsonConfig[\"max_temp\"], 15, 90);' MaxPV3/MaxPV3.ino",
+      "! grep -nE '(httpPort|mqttPort|mqttPeriod|relaisDistantPort|boostDuration|boostRatio|boostTimerHour|boostTimerMinute|relayPlusMin|relayPlusMax|relayPlusHour|maxTemp) = jsonConfig\\[' MaxPV3/MaxPV3.ino",
+      "grep -qF 'if ( relayPlusMax <= relayPlusMin)  relayPlusMax = relayPlusMin + 5;' MaxPV3/MaxPV3.ino"
+    ],
+    "tests": [
+      "grep F2 (15 critères)"
+    ],
+    "passes": true
+  },
+  {
+    "id": "F3",
+    "description": "Périmètre respecté et firmware compilable",
+    "criteres_acceptation": [
+      "test -z \"$(git diff --name-only main...HEAD -- '*.ino' '*.h' | grep -vx 'MaxPV3/MaxPV3.ino')\"",
+      ".venv/bin/python -I scripts/check_versions.py",
+      "Job build de la CI GitHub Actions vert sur la PR (pio run -e d1_mini, buildfs, EcoPV nano)"
+    ],
+    "tests": [],
+    "passes": false
+  }
+]
