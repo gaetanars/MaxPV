@@ -55,7 +55,7 @@
 #include <ESPAsyncWiFiManager.h>
 #include <AsyncMqtt_Generic.h>
 #include <AsyncHTTPRequest_Generic.h> 
-#include <AsyncElegantOTA.h>
+#include <ElegantOTA.h>
 #include <Ticker.h>
 #include <TickerScheduler.h>
 #include <ArduinoJson.h>
@@ -541,6 +541,8 @@ void loop()
   static int i = 0;
 
   refTime = millis ();
+
+  ElegantOTA.loop();
  
   // ***   Exécution des tâches récurrentes   ***
 
@@ -1929,8 +1931,7 @@ void remoteRelay ( int state )
 
 void startWeb (void) 
 {
-  AsyncElegantOTA.setID(MAXPV_VERSION_FULL);
-  AsyncElegantOTA.begin(&webServer);
+  ElegantOTA.begin(&webServer);
   delay(100);
   setWebHandlers();
   delay(100);
