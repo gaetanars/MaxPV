@@ -20,7 +20,7 @@ pio run --target buildfs -e d1_mini    # image LittleFS depuis MaxPV3/data -> Ma
 pio run -e d1_mini -t upload / uploadfs
 ```
 
-- `platformio.ini` : `src_dir=MaxPV3`, `data_dir=MaxPV3/data`, `lib_dir="Librairies IDE"` (copies vendorisées d'ESPAsyncTCP / ESPAsyncWebServer, à ne pas modifier sans raison), autres libs via `lib_deps`.
+- `platformio.ini` : `src_dir=MaxPV3`, `data_dir=MaxPV3/data` ; toutes les libs viennent de `lib_deps`, y compris la pile async esp32async (ESPAsyncWebServer / ESPAsyncTCP) et ElegantOTA (mode async via `-DELEGANTOTA_USE_ASYNC_WEBSERVER=1`).
 - `extra_script.py` extrait `MAXPV_VERSION` de `MaxPV3/maxpv_defines.h` par regex pour nommer les binaires : garder le format `#define MAXPV_VERSION "x.yy"`.
 - CI `.github/workflows/build.yml` (actions épinglées par SHA, PlatformIO et libs en versions exactes, Dependabot mensuel) : jobs `lint` (actionlint), `build` (ESP + fs, variante FTP, EcoPV `nano`/`nano_oled` via `ci/ecopv.ini`, amorceESP via `ci/amorce.ini`, `pio check` non bloquant) sur push `main`/PR/dispatch ; sur tag `v*`, job `release` (contrôle des versions, release publiée + `.bin`).
 - Le firmware EcoPV se flashe via l'IDE Arduino (libs OneWire, DallasTemperature, SSD1306Ascii optionnelle pour l'écran oLed).
@@ -55,6 +55,6 @@ MaxPV! (`MAXPV_VERSION` / `MAXPV_VERSION_FULL` dans `maxpv_defines.h`), site Web
 - branche de base : main
 - contraintes :
   - aucun push de tag, aucun changement des réglages GitHub du dépôt ;
-  - `Librairies IDE/` et les sources des sketches (`*.ino`, `*.h`) ne sont pas modifiés ;
+  - `Librairies IDE/` et les sources des sketches (`*.ino`, `*.h`) ne sont modifiés que s'ils sont explicitement listés dans la SPEC en cours ;
   - `.venv/` (PlatformIO épinglé, même version que la CI) et `CLAUDE.local.md` restent hors git (`.git/info/exclude`) ;
   - validation finale d'un changement de CI = runs GitHub Actions verts sur la PR.
