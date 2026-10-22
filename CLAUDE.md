@@ -35,7 +35,7 @@ pio run -e d1_mini -t upload / uploadfs
 ## Versions : trois numéros indépendants
 
 MaxPV! (`MAXPV_VERSION` / `MAXPV_VERSION_FULL` dans `maxpv_defines.h`), site Web (`MaxPV3/data/versionweb.txt`), EcoPV (`#define VERSION` dans `EcoPV3.ino:87`). Une release met à jour :
-- le fichier `latest` à la racine (JSON `ecopvver`/`maxpvver`/`webver`/`whatsnew`), lu par `main.html` via raw.githubusercontent.com (branche `main`, dépôt Jetblack31/MaxPV) pour signaler une mise à jour ;
+- le fichier `latest` à la racine (JSON `ecopvver`/`maxpvver`/`webver`/`whatsnew`), lu par `main.html` via raw.githubusercontent.com (dépôt `gaetanars/MaxPV`, branche `main`) pour signaler une mise à jour ; `whatsnew` est affiché en texte brut ;
 - la section « Versions » du `README.md` (entrée datée, avec les trois numéros) ;
 - le tag `v<MAXPV_VERSION>` (ex. `v3.62`) : la CI vérifie la cohérence avec `scripts/check_versions.py`, puis publie la release avec les `.bin` versionnés et les assets à noms fixes `MaxPV3_firmware.bin` / `MaxPV3_filesystem.bin` (utilisés par le README pour l'install initiale). Aucun binaire n'est commité.
 
@@ -43,7 +43,7 @@ MaxPV! (`MAXPV_VERSION` / `MAXPV_VERSION_FULL` dans `maxpv_defines.h`), site Web
 
 - Contraintes mémoire ESP8266 : réponses HTTP volumineuses du relais distant => redémarrage (cf. README) ; préférer `F()` / `PROGMEM` et éviter les gros `String` temporaires.
 - Ordre de mise à jour documenté : firmware puis filesystem ; la MAJ du filesystem efface la config Wifi.
-- Dépôt amont : Jetblack31/MaxPV (licence LGPL 2.1+ en en-têtes) ; ce clone est sous `gaetanars`.
+- Origine : fork de Jetblack31/MaxPV (licence LGPL 2.1+ en en-têtes, attribution conservée dans credits.html) ; ce fork est autonome, l'UI ne référence plus l'amont hors crédits et aide EcoPV.
 
 ## Contrat agentique
 
