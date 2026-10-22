@@ -38,7 +38,7 @@ Les schémas électroniques et la liste des composants nécessaires à la réali
 
 # Installation des firmwares
 ## Pré-requis
-L'installation de MaxPV! se fait par programmation de l'Arduino Nano et du Wemos/ESP8266 par USB. Vous aurez besoin d'utiliser l'IDE Arduino avec le support pour les cartes ESP8266 (version conseillée : IDE Arduino 1.8.x).
+L'installation de MaxPV! se fait par programmation de l'Arduino Nano et du Wemos/ESP8266 par USB. Vous aurez besoin de l'IDE Arduino pour le Nano (version conseillée : IDE Arduino 1.8.x). Pour le Wemos : un câble USB, et soit Chrome/Edge (page web esptool-js, rien à installer), soit esptool (Python).
 Le fonctionnement de MaxPV! nécessite une connexion à votre réseau local en Wifi avec une adresse IP statique. En cours d'installation, vous aurez besoin de vous connecter temporairement en Wifi au Wemos à l'aide d'un ordinateur portable ou d'un téléphone.
 
 ## Programmation de l'Arduino Nano
@@ -50,24 +50,11 @@ Le fonctionnement de MaxPV! nécessite une connexion à votre réseau local en W
 * Téléchargez le programme dans l'Arduino Nano.
 
 ## Programmation du Wemos
-* Configurez l'IDE Arduino sur la carte "Wemos D1 mini clone" avec les paramètres suivants : 
-  * **Flash size: 4 MB (FS: 1MB, OTA: 1019KB)**,
-  * **Erase Flash: All Flash Contents**
-
-![IDE Config ESP](images/configIDEESP.png)
-* Installez la librairie **ElegantOTA** à partir du gestionnaire de librairies.
-* Ouvrez le programme *amorceESP.ino* et téléchargez le dans le Wemos.
-* A l'aide d'un ordinateur connectez-vous au réseau Wifi MaxPV créé par le Wemos et allez à la page http://192.168.4.1
-* Une page intitulée ElegantOTA s'ouvre à l'écran.
-* Téléchargez d'abord le **Filesystem** *MaxPV3_filesystem.bin* disponible dans les [releases](https://github.com/gaetanars/MaxPV/releases/latest) : https://github.com/gaetanars/MaxPV/releases/latest/download/MaxPV3_filesystem.bin
-
-![OTA Filesystem](images/OTAFS.png)
-* Le Wemos reboote, connectez-vous de nouveau au réseau Wifi MaxPv.
-* Téléchargez ensuite le **Firmware** *MaxPV3_firmware.bin* disponible dans les [releases](https://github.com/gaetanars/MaxPV/releases/latest) : https://github.com/gaetanars/MaxPV/releases/latest/download/MaxPV3_firmware.bin
-
-![OTA Firmware](images/OTAFW.png)
-* Le Wemos reboote, connectez-vous de nouveau au réseau Wifi MaxPv.
-* Un portail captif s'ouvre, s'il ne s'ouvre pas automatiquement, connectez-vous à l'adresse http://192.168.4.1
+* Téléchargez l'image complète *MaxPV3_full.bin* (firmware + filesystem) : https://github.com/gaetanars/MaxPV/releases/latest/download/MaxPV3_full.bin
+* Branchez le Wemos en USB (installez le pilote CH340 si le port n'apparaît pas).
+* Ouvrez https://espressif.github.io/esptool-js/ dans Chrome ou Edge, cliquez sur **Connect** et choisissez le port du Wemos, puis **Erase Flash**. Indiquez ensuite **Flash Address** `0x0` avec le fichier *MaxPV3_full.bin*, puis cliquez sur **Program**.
+* Alternative en ligne de commande avec [esptool](https://github.com/espressif/esptool) (version 5.x) : `esptool --chip esp8266 write-flash --erase-all 0x0 MaxPV3_full.bin`
+* Redémarrez le Wemos, puis connectez-vous au réseau Wifi **MaxPV** qu'il crée. Un portail captif s'ouvre, s'il ne s'ouvre pas automatiquement, connectez-vous à l'adresse http://192.168.4.1
 
 ![MaxPV! captif portal](images/captif.png)
 * Réalisez votre configuration Wifi et votre configuration IP. Pour la passerelle, indiquez l'adresse de votre 'Box internet'. Pour les serveurs DNS, indiquez l'adresse de votre 'Box internet' comme adresse DNS1, et indiquez l'adresse 8.8.8.8 pour DNS2 (8.8.8.8 correspond au service DNS de Google). Cela doit convenir à la plupart des installations domestiques. Note : Certaines 'Box internet' ont l'adresse 192.168.1.1, d'autres 192.168.1.254, 192.168.0.254 ou encore 192.168.0.1.
@@ -94,7 +81,7 @@ Les mises à jour de l'Arduino se font par USB comme décrit ci-dessus dans l'in
 
 Les mises à jour de MaxPV! sur le Wemos se font par Wifi en OTA via la page **Update** de l'interface. **Attention** : la mise à jour du filesystem nécessitera de reconfigurer la connexion Wifi du Wemos comme décrit précédemment : se connecter au réseau Wifi MaxPV puis accéder au portail à l'adresse 192.168.4.1. A partir de la version 3.5, Le Wemos doit être placé sur le PCB avec l'Arduino Nano pour que l'interface MaxPV soit accessible.
 
-Pour les mises à jour, **l'ordre à suivre est** : mise à jour du firmware puis du filesystem. En cas d'échec de la mise à jour, utilisez la procédure Programmation du Wemos ci-dessus.
+Pour les mises à jour, **l'ordre à suivre est** : mise à jour du firmware puis du filesystem. En cas d'échec de la mise à jour, utilisez la procédure Programmation du Wemos ci-dessus (elle efface toute la configuration du Wemos).
 
 ## Installation avancée
 Si vous souhaitez compiler le firmware et le filesystem du Wemos pour réaliser une installation personnalisée, les codes sources sont disponibles dans le répertoire **"MaxPV3"**.
