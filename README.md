@@ -59,11 +59,11 @@ Le fonctionnement de MaxPV! nécessite une connexion à votre réseau local en W
 * Ouvrez le programme *amorceESP.ino* et téléchargez le dans le Wemos.
 * A l'aide d'un ordinateur connectez-vous au réseau Wifi MaxPV créé par le Wemos et allez à la page http://192.168.4.1
 * Une page intitulée ElegantOTA s'ouvre à l'écran.
-* Téléchargez d'abord le **Filesystem** *MaxPV3_filesystem.bin* disponible dans le répertoire **"Binaires MaxPV"**.
+* Téléchargez d'abord le **Filesystem** *MaxPV3_filesystem.bin* disponible dans les [releases](https://github.com/gaetanars/MaxPV/releases/latest) : https://github.com/gaetanars/MaxPV/releases/latest/download/MaxPV3_filesystem.bin
 
 ![OTA Filesystem](images/OTAFS.png)
 * Le Wemos reboote, connectez-vous de nouveau au réseau Wifi MaxPv.
-* Téléchargez ensuite le **Firmware** *MaxPV3_firmware.bin* disponible dans le répertoire **"Binaires MaxPV"**.
+* Téléchargez ensuite le **Firmware** *MaxPV3_firmware.bin* disponible dans les [releases](https://github.com/gaetanars/MaxPV/releases/latest) : https://github.com/gaetanars/MaxPV/releases/latest/download/MaxPV3_firmware.bin
 
 ![OTA Firmware](images/OTAFW.png)
 * Le Wemos reboote, connectez-vous de nouveau au réseau Wifi MaxPv.

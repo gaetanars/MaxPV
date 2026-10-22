@@ -1,0 +1,148 @@
+[
+  {
+    "id": "F1",
+    "description": "CI-1/CI-2 : actions à jour épinglées par SHA, plus d'action tierce de release, permissions minimales, workflow valide",
+    "criteres_acceptation": [
+      "actionlint retourne 0",
+      "! grep -nE '^\\s*-?\\s*uses:' .github/workflows/*.yml | grep -vE '@[0-9a-f]{40} # v[0-9]'",
+      "! grep -rn 'svenstaro' .github",
+      "! grep -rnE '(upload|download)-artifact@v3' .github",
+      "grep -nE '^permissions:' .github/workflows/build.yml && grep -n 'contents: read' .github/workflows/build.yml",
+      "test \"$(grep -c 'contents: write' .github/workflows/build.yml)\" -eq 1",
+      "! grep -rn 'pull_request_target' .github"
+    ],
+    "tests": [
+      "criteres_acceptation exécutés (grep/actionlint/check_versions.py)"
+    ],
+    "passes": true
+  },
+  {
+    "id": "F2",
+    "description": "CI-3 : builds reproductibles (PlatformIO, plateformes et libs en versions exactes, Python 3.13, cache invalidé par les ini)",
+    "criteres_acceptation": [
+      "! grep -nE '@[\\^~]' platformio.ini ci/*.ini",
+      "grep -nE '^platform = espressif8266@[0-9]+\\.[0-9]+\\.[0-9]+$' platformio.ini",
+      "grep -nE 'pip install platformio==[0-9]+\\.[0-9]+\\.[0-9]+' .github/workflows/build.yml",
+      "grep -nE \"python-version: '?3\\.13'?\" .github/workflows/build.yml",
+      "grep -n \"hashFiles('platformio.ini', 'ci/\\*.ini')\" .github/workflows/build.yml",
+      "La version de platformio dans .venv (.venv/bin/pio --version) est celle du workflow"
+    ],
+    "tests": [
+      "criteres_acceptation exécutés (grep/actionlint/check_versions.py)"
+    ],
+    "passes": true
+  },
+  {
+    "id": "F3",
+    "description": "CI-4 : déclencheurs push main/tags v*, pull_request, workflow_dispatch, concurrency",
+    "criteres_acceptation": [
+      "grep -n 'workflow_dispatch' .github/workflows/build.yml",
+      "grep -nE '^\\s*pull_request:' .github/workflows/build.yml",
+      "grep -nE \"tags:\" .github/workflows/build.yml && grep -nE \"'v\\*'|\\\"v\\*\\\"\" .github/workflows/build.yml",
+      "grep -n 'concurrency:' .github/workflows/build.yml && grep -n 'cancel-in-progress' .github/workflows/build.yml"
+    ],
+    "tests": [
+      "criteres_acceptation exécutés (grep/actionlint/check_versions.py)"
+    ],
+    "passes": true
+  },
+  {
+    "id": "F4",
+    "description": "CI-5 : compilation ESP (+ variante FTP), EcoPV (nano, nano_oled) et amorceESP avec PlatformIO",
+    "criteres_acceptation": [
+      ".venv/bin/pio run -e d1_mini && .venv/bin/pio run -t buildfs -e d1_mini retourne 0",
+      "PLATFORMIO_BUILD_FLAGS=-DMAXPV_FTP_SERVER PLATFORMIO_BUILD_DIR=\"$(mktemp -d)\" .venv/bin/pio run -e d1_mini retourne 0 (ou étape non bloquante documentée, cf. risques)",
+      ".venv/bin/pio ci EcoPV3/EcoPV3.ino --project-conf ci/ecopv.ini -e nano retourne 0",
+      ".venv/bin/pio ci EcoPV3/EcoPV3.ino --project-conf ci/ecopv.ini -e nano_oled retourne 0 (ou étape non bloquante documentée, cf. risques)",
+      ".venv/bin/pio ci amorceESP/amorceESP.ino --project-conf ci/amorce.ini -e amorce retourne 0",
+      "grep -c 'pio ci' .github/workflows/build.yml renvoie au moins 3",
+      "git diff --quiet main -- '*.ino' '*.h' 'Librairies IDE'"
+    ],
+    "tests": [
+      "pio run/buildfs/ci exécutés dans docker python:3.13 (pio 6.2.0)"
+    ],
+    "passes": true
+  },
+  {
+    "id": "F5",
+    "description": "CI-6 : scripts/check_versions.py vérifie la cohérence des versions et du tag, exécuté dans le job release",
+    "criteres_acceptation": [
+      ".venv/bin/python -I scripts/check_versions.py retourne 0 sur le dépôt",
+      ".venv/bin/python -I scripts/check_versions.py --tag v3.61 retourne 0",
+      "! .venv/bin/python -I scripts/check_versions.py --tag v9.99",
+      "! .venv/bin/python -I scripts/check_versions.py --tag 3.61",
+      "Copie du dépôt dans un répertoire temporaire avec latest.maxpvver modifié : ! .venv/bin/python -I scripts/check_versions.py --root <copie>",
+      "Copie avec versionweb.txt modifié : exit non nul ; copie avec #define VERSION de EcoPV3.ino modifié : exit non nul",
+      "grep -n 'check_versions.py --tag' .github/workflows/build.yml"
+    ],
+    "tests": [
+      "criteres_acceptation exécutés (grep/actionlint/check_versions.py)"
+    ],
+    "passes": true
+  },
+  {
+    "id": "F6",
+    "description": "CI-7 : Dependabot mensuel pour les GitHub Actions",
+    "criteres_acceptation": [
+      "test -f .github/dependabot.yml",
+      "grep -nE 'package-ecosystem: \"?github-actions\"?' .github/dependabot.yml",
+      "grep -nE 'interval: \"?monthly\"?' .github/dependabot.yml"
+    ],
+    "tests": [
+      "criteres_acceptation exécutés (grep/actionlint/check_versions.py)"
+    ],
+    "passes": true
+  },
+  {
+    "id": "F7",
+    "description": "CI-8 : release publiée sur tag v* avec assets versionnés et à noms fixes ; Binaires MaxPV/ retiré ; README et CLAUDE.md à jour",
+    "criteres_acceptation": [
+      "grep -n \"startsWith(github.ref, 'refs/tags/v')\" .github/workflows/build.yml",
+      "grep -n 'gh release create' .github/workflows/build.yml && grep -n -- '--verify-tag' .github/workflows/build.yml",
+      "grep -n 'gh release upload' .github/workflows/build.yml && grep -n -- '--clobber' .github/workflows/build.yml",
+      "grep -n 'MaxPV3_firmware.bin' .github/workflows/build.yml && grep -n 'MaxPV3_filesystem.bin' .github/workflows/build.yml",
+      "test ! -e 'Binaires MaxPV'",
+      "grep -n 'gaetanars/MaxPV/releases/latest/download/MaxPV3_firmware.bin' README.md",
+      "grep -n 'gaetanars/MaxPV/releases/latest/download/MaxPV3_filesystem.bin' README.md",
+      "! grep -n 'Binaires MaxPV' README.md CLAUDE.md"
+    ],
+    "tests": [
+      "criteres_acceptation exécutés (grep/actionlint/check_versions.py)"
+    ],
+    "passes": true
+  },
+  {
+    "id": "F8",
+    "description": "CI-9 + lint : pio check non bloquant et job actionlint bloquant à version figée",
+    "criteres_acceptation": [
+      "grep -n 'pio check -e d1_mini' .github/workflows/build.yml",
+      "Le step pio check porte continue-on-error: true (vérifié par lecture, 1 ligne au-dessus/dessous)",
+      "grep -n 'actionlint' .github/workflows/build.yml et la version téléchargée est un numéro exact (X.Y.Z)"
+    ],
+    "tests": [
+      "criteres_acceptation exécutés (grep/actionlint/check_versions.py)"
+    ],
+    "passes": true
+  },
+  {
+    "id": "F9",
+    "description": "Sécurité du workflow : pas d'interpolation de données tierces dans run, checkout sans credentials persistés",
+    "criteres_acceptation": [
+      "! grep -nE 'run:.*\\$\\{\\{ *github\\.(ref|head_ref|event)' .github/workflows/build.yml",
+      "Chaque usage de actions/checkout est suivi de persist-credentials: false (grep -A3)"
+    ],
+    "tests": [
+      "criteres_acceptation exécutés (grep/actionlint/check_versions.py)"
+    ],
+    "passes": true
+  },
+  {
+    "id": "F10",
+    "description": "Les runs GitHub Actions de la PR draft sont verts",
+    "criteres_acceptation": [
+      "test \"$(gh run list --branch agent/ci-hardening --event pull_request -L 1 --json conclusion -q '.[0].conclusion')\" = success (après gh run watch)"
+    ],
+    "tests": [],
+    "passes": false
+  }
+]
