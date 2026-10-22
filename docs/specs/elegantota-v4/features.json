@@ -1,0 +1,83 @@
+[
+  {
+    "id": "F1",
+    "description": "OTA via ElegantOTA 4.0.0 en mode async dans MaxPV3.ino",
+    "criteres_acceptation": [
+      "! grep -rn 'AsyncElegantOTA' MaxPV3 platformio.ini",
+      "grep -q '#include <ElegantOTA.h>' MaxPV3/MaxPV3.ino",
+      "grep -q 'ElegantOTA.begin(&webServer)' MaxPV3/MaxPV3.ino",
+      "test \"$(grep -c 'ElegantOTA.loop()' MaxPV3/MaxPV3.ino)\" -eq 1",
+      "awk '/^void loop\\(\\)/,/^}/' MaxPV3/MaxPV3.ino | grep -q 'ElegantOTA.loop()'",
+      "git diff --quiet main -- EcoPV3 amorceESP 'MaxPV3/*.h'"
+    ],
+    "tests": [],
+    "passes": false
+  },
+  {
+    "id": "F2",
+    "description": "Dépendances : ElegantOTA 4.0.0 + esp32async en versions exactes, Librairies IDE supprimé, une seule implémentation async",
+    "criteres_acceptation": [
+      "grep -qE '^\\s*ayushsharma82/ElegantOTA@4\\.0\\.0\\s*$' platformio.ini",
+      "grep -qE '^\\s*esp32async/ESPAsyncWebServer@[0-9]+\\.[0-9]+\\.[0-9]+\\s*$' platformio.ini",
+      "grep -qE '^\\s*esp32async/ESPAsyncTCP@[0-9]+\\.[0-9]+\\.[0-9]+\\s*$' platformio.ini",
+      "grep -q -- '-DELEGANTOTA_USE_ASYNC_WEBSERVER=1' platformio.ini",
+      "! grep -nE '@[\\^~]|lib_dir' platformio.ini",
+      "test ! -e 'Librairies IDE'",
+      ".venv/bin/pio pkg install -e d1_mini",
+      "test \"$(.venv/bin/pio pkg list -e d1_mini | grep -cE 'ESPAsyncWebServer @')\" -eq 1",
+      "test \"$(.venv/bin/pio pkg list -e d1_mini | grep -cE 'ESPAsyncTCP @')\" -eq 1"
+    ],
+    "tests": [],
+    "passes": false
+  },
+  {
+    "id": "F3",
+    "description": "Compilation : firmware, filesystem, variante FTP, EcoPV et amorce verts en CI sur la PR",
+    "criteres_acceptation": [
+      "commande build du contrat retourne 0 (ou, si toolchain locale indisponible, consigné dans progress.md)",
+      "gh pr checks --watch --fail-fast retourne 0 sur la PR draft agent/elegantota-v4",
+      "le log du job build contient l'étape variante FTP en succès (gh run view --log | grep -q 'MAXPV_FTP_SERVER')"
+    ],
+    "tests": [],
+    "passes": false
+  },
+  {
+    "id": "F4",
+    "description": "Licence et crédits : AGPL-3.0 d'ElegantOTA mentionnée",
+    "criteres_acceptation": [
+      "grep -q 'https://github.com/ayushsharma82/ElegantOTA' MaxPV3/data/credits.html",
+      "grep -q 'ElegantOTA (AGPL-3.0)' MaxPV3/data/credits.html",
+      "grep -q '^## Licence' README.md",
+      "awk '/^## Licence/,0' README.md | grep -q 'AGPL-3.0'",
+      "awk '/^## Licence/,0' README.md | grep -q 'LGPL 2.1'"
+    ],
+    "tests": [],
+    "passes": false
+  },
+  {
+    "id": "F5",
+    "description": "Documentation projet et contrat à jour",
+    "criteres_acceptation": [
+      "test \"$(grep -c 'Librairies IDE' CLAUDE.md)\" -eq 1",
+      "grep -q 'ne sont modifiés que s.ils sont explicitement listés dans la SPEC en cours' CLAUDE.md",
+      "grep -q 'ELEGANTOTA_USE_ASYNC_WEBSERVER' CLAUDE.md",
+      "grep -q 'esp32async' CLAUDE.md",
+      ".venv/bin/python -I scripts/check_versions.py",
+      "actionlint"
+    ],
+    "tests": [],
+    "passes": false
+  },
+  {
+    "id": "F6",
+    "description": "PR : mesures, sécurité du portail, checklist matériel",
+    "criteres_acceptation": [
+      "gh pr view --json body -q .body | grep -q 'Flash'",
+      "gh pr view --json body -q .body | grep -q 'RAM'",
+      "gh pr view --json body -q .body | grep -qi 'ressources externes'",
+      "gh pr view --json body -q .body | grep -qi 'test matériel'"
+    ],
+    "tests": [],
+    "passes": false
+  }
+]
