@@ -47,7 +47,7 @@
 #define HTTP_PORT       80              // Port serveur web MaxPV!
 
 // Taille de la configuration JSON MaxPV! pour la manipulation
-#define JSON_CONFIG_SIZE    1100        // en caractères
+#define JSON_CONFIG_SIZE    2048        // en caractères
 
 // Valeurs par défaut de la configuration TCP MaxPV!
 #define DEFAULT_IP          "192.168.1.250"

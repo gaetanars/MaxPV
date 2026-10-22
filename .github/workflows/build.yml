@@ -68,6 +68,9 @@ jobs:
           PLATFORMIO_BUILD_DIR: ${{ runner.temp }}/build-ftp
         run: pio run -e d1_mini
 
+      - name: Tests natifs
+        run: pio test -e native
+
       - name: Build EcoPV (Nano)
         run: pio ci EcoPV3/EcoPV3.ino --project-conf ci/ecopv.ini -e nano
       - name: Build EcoPV (Nano, écran oLed)

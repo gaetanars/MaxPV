@@ -126,7 +126,7 @@ Utilisation typique : le relais secondaire pilote une pompe de piscine. On peut 
 
 
 ## API
-L'API permet d'interfacer MaxPV! avec des systèmes externes comme un système de domotique. L'API a été revue en profondeur comparativement à la version précédente de EcoPV. L'API est décrite dans la [Documentation API](Documentation%20API/API_MaxPV.pdf).
+L'API permet d'interfacer MaxPV! avec des systèmes externes comme un système de domotique. L'API a été revue en profondeur comparativement à la version précédente de EcoPV. L'API est décrite dans la [Documentation API](Documentation%20API/API_MaxPV.pdf). Depuis cette version, la sauvegarde de la configuration passe par `POST /api/set` (corps `application/x-www-form-urlencoded`, champs `configmaxpv` et `value`) ; le GET `api/set?configmaxpv` est retiré. Le PDF n'est pas à jour sur ce point.
 
 ## WatchDog Wifi
 Un WatchDog Wifi est implémenté. L'activation est possible dans la page administration.

@@ -20,9 +20,10 @@ pio run --target buildfs -e d1_mini    # image LittleFS depuis MaxPV3/data -> Ma
 pio run -e d1_mini -t upload / uploadfs
 ```
 
+- `pio test -e native` : tests natifs sur l'hôte (Unity, ArduinoJson), dans `test/`.
 - `platformio.ini` : `src_dir=MaxPV3`, `data_dir=MaxPV3/data` ; toutes les libs viennent de `lib_deps`, y compris la pile async esp32async (ESPAsyncWebServer / ESPAsyncTCP) et ElegantOTA (mode async via `-DELEGANTOTA_USE_ASYNC_WEBSERVER=1`).
 - `extra_script.py` extrait `MAXPV_VERSION` de `MaxPV3/maxpv_defines.h` par regex pour nommer les binaires : garder le format `#define MAXPV_VERSION "x.yy"`.
-- CI `.github/workflows/build.yml` (actions épinglées par SHA, PlatformIO et libs en versions exactes, Dependabot mensuel) : jobs `lint` (actionlint), `build` (ESP + fs, variante FTP, EcoPV `nano`/`nano_oled` via `ci/ecopv.ini`, amorceESP via `ci/amorce.ini`, `pio check` non bloquant) sur push `main`/PR/dispatch ; sur tag `v*`, job `release` (contrôle des versions, release publiée + `.bin`).
+- CI `.github/workflows/build.yml` (actions épinglées par SHA, PlatformIO et libs en versions exactes, Dependabot mensuel) : jobs `lint` (actionlint), `build` (ESP + fs, variante FTP, tests natifs `pio test -e native`, EcoPV `nano`/`nano_oled` via `ci/ecopv.ini`, amorceESP via `ci/amorce.ini`, `pio check` non bloquant) sur push `main`/PR/dispatch ; sur tag `v*`, job `release` (contrôle des versions, release publiée + `.bin`).
 - Le firmware EcoPV se flashe via l'IDE Arduino (libs OneWire, DallasTemperature, SSD1306Ascii optionnelle pour l'écran oLed).
 
 ## Architecture
@@ -47,7 +48,7 @@ MaxPV! (`MAXPV_VERSION` / `MAXPV_VERSION_FULL` dans `maxpv_defines.h`), site Web
 
 ## Contrat agentique
 
-- test : `.venv/bin/python -I scripts/check_versions.py`
+- test : `.venv/bin/python -I scripts/check_versions.py && .venv/bin/pio test -e native`
 - lint : `actionlint`
 - typecheck : none
 - build : `.venv/bin/pio run -e d1_mini && .venv/bin/pio run -t buildfs -e d1_mini && .venv/bin/pio ci EcoPV3/EcoPV3.ino --project-conf ci/ecopv.ini -e nano`
