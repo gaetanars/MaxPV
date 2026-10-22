@@ -768,6 +768,11 @@ void configWrite(void)
   jsonConfig["max_temp"] = maxTemp;
   jsonConfig["temp_limit_active"] = tempLimitActive;
 
+  if (jsonConfig.overflowed())
+  {
+    logSerial ( F("[ESP]"), F("Configuration trop volumineuse, non sauvegardée") );
+    return;
+  }
 
   File configFile = LittleFS.open(F("/config.json"), "w");
   serializeJson(jsonConfig, configFile);
@@ -2180,12 +2185,20 @@ void setWebHandlers (void) {
       else if ( mystring == F("auto") )   SSRModeEcoPV ( AUTOM );
       else response = F("Bad request");
     }
-    else if ( ( request->hasParam ( F("configmaxpv") ) ) && ( request->hasParam ( F("value") ) ) ) {
-      mystring = request->getParam(F("value"))->value();
-      if (configRead(mystring)) shouldSaveConfig = true;
-    }
     else response = F("Bad request or request unknown");
     request->send ( 200, "text/plain", response );
+  });
+
+  webServer.on("/api/set", HTTP_POST, [](AsyncWebServerRequest * request)
+  {
+    if ( ( request->hasParam ( F("configmaxpv"), true ) ) && ( request->hasParam ( F("value"), true ) ) ) {
+      if ( configRead ( request->getParam(F("value"), true)->value() ) ) {
+        shouldSaveConfig = true;
+        request->send ( 200, "text/plain", F("Request successfully processed") );
+      }
+      else request->send ( 400, "text/plain", F("Bad request: invalid configuration") );
+    }
+    else request->send ( 400, "text/plain", F("Bad request or request unknown") );
   });
 
   delay(5);

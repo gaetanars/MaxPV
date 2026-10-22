@@ -1,0 +1,101 @@
+[
+  {
+    "id": "F1",
+    "description": "JSON_CONFIG_SIZE porté à 2048 (3072 si le test natif l'exige)",
+    "criteres_acceptation": [
+      "grep -qE '^#define JSON_CONFIG_SIZE +(2048|3072)( |$)' MaxPV3/maxpv_defines.h",
+      "grep -q 'DynamicJsonDocument jsonConfig(JSON_CONFIG_SIZE);' MaxPV3/MaxPV3.ino"
+    ],
+    "tests": [
+      "test_deserialize_max_config",
+      "test_write_roundtrip"
+    ],
+    "passes": true
+  },
+  {
+    "id": "F2",
+    "description": "configWrite n'écrit pas un document en débordement",
+    "criteres_acceptation": [
+      "grep -qF 'jsonConfig.overflowed()' MaxPV3/MaxPV3.ino",
+      "grep -qF 'Configuration trop volumineuse, non sauvegardée' MaxPV3/MaxPV3.ino",
+      "test \"$(grep -nF 'jsonConfig.overflowed()' MaxPV3/MaxPV3.ino | head -1 | cut -d: -f1)\" -lt \"$(grep -nF 'LittleFS.open(F(\"/config.json\"), \"w\")' MaxPV3/MaxPV3.ino | head -1 | cut -d: -f1)\""
+    ],
+    "tests": [],
+    "passes": true
+  },
+  {
+    "id": "F3",
+    "description": "POST /api/set pour configmaxpv avec 200/400, branche GET configmaxpv retirée",
+    "criteres_acceptation": [
+      "grep -qE 'webServer\\.on *\\( *\"/api/set\", *HTTP_POST' MaxPV3/MaxPV3.ino",
+      "grep -qE 'getParam *\\( *F\\(\"value\"\\), *true *\\)' MaxPV3/MaxPV3.ino",
+      "grep -qE 'hasParam *\\( *F\\(\"configmaxpv\"\\), *true *\\)' MaxPV3/MaxPV3.ino",
+      "grep -qE 'send *\\( *400' MaxPV3/MaxPV3.ino",
+      "grep -qF 'Bad request: invalid configuration' MaxPV3/MaxPV3.ino",
+      "test \"$(grep -cE 'hasParam *\\( *F\\(\"configmaxpv\"\\) *\\)' MaxPV3/MaxPV3.ino)\" -eq 1"
+    ],
+    "tests": [],
+    "passes": true
+  },
+  {
+    "id": "F4",
+    "description": "admin.html envoie la config en POST encodé et ne redémarre qu'après succès",
+    "criteres_acceptation": [
+      "grep -qF 'xhttp.open(\"POST\", \"api/set\", true);' MaxPV3/data/admin.html",
+      "grep -qF 'new URLSearchParams(' MaxPV3/data/admin.html",
+      "grep -qF 'application/x-www-form-urlencoded' MaxPV3/data/admin.html",
+      "! grep -qF 'api/set?configmaxpv' MaxPV3/data/admin.html",
+      "! grep -qE 'saveConfigMaxPV *\\( *\\)' MaxPV3/data/admin.html",
+      "grep -qF 'Échec de la sauvegarde' MaxPV3/data/admin.html",
+      "grep -qE 'if *\\( *ele *\\) *ele\\.blur\\(\\)' MaxPV3/data/admin.html"
+    ],
+    "tests": [],
+    "passes": true
+  },
+  {
+    "id": "F5",
+    "description": "Test natif PlatformIO de la taille de config, exécuté en CI",
+    "criteres_acceptation": [
+      "grep -qF '[env:native]' platformio.ini",
+      "grep -qF 'platform = native@1.2.1' platformio.ini",
+      "grep -qF 'test_framework = unity' platformio.ini",
+      "grep -qF 'JSON_CONFIG_SIZE' test/test_config_size/test_main.cpp",
+      "grep -qF 'test_deserialize_max_config' test/test_config_size/test_main.cpp",
+      "grep -qF 'test_write_roundtrip' test/test_config_size/test_main.cpp",
+      "grep -qF 'pio test -e native' .github/workflows/build.yml",
+      "actionlint",
+      "docker run --rm -v \"$PWD\":/work -w /work -v maxpv-pio-arm:/root/.platformio python:3.12-slim sh -c 'apt-get update -qq && apt-get install -qq -y git g++ >/dev/null && pip install -q --root-user-action=ignore platformio==6.2.0 && pio test -e native'"
+    ],
+    "tests": [
+      "test_deserialize_max_config",
+      "test_write_roundtrip"
+    ],
+    "passes": true
+  },
+  {
+    "id": "F6",
+    "description": "Builds du contrat verts (ESP, filesystem, EcoPV) et versions cohérentes",
+    "criteres_acceptation": [
+      "docker run --rm -v \"$PWD\":/work -w /work -v maxpv-pio-arm:/root/.platformio python:3.12-slim sh -c 'apt-get update -qq && apt-get install -qq -y git >/dev/null && pip install -q --root-user-action=ignore platformio==6.2.0 && pio run -e d1_mini && pio run -t buildfs -e d1_mini && pio ci EcoPV3/EcoPV3.ino --project-conf ci/ecopv.ini -e nano'",
+      ".venv/bin/python -I scripts/check_versions.py",
+      "gh pr checks --watch --fail-fast (runs GitHub Actions verts sur la PR draft)"
+    ],
+    "tests": [],
+    "passes": false
+  },
+  {
+    "id": "F7",
+    "description": "Documentation : README (rupture API), CLAUDE.md (contrat), ROADMAP locale (P0-3/4/5 clos)",
+    "criteres_acceptation": [
+      "grep -qE 'POST.*configmaxpv|configmaxpv.*POST' README.md",
+      "grep -qF 'pio test -e native' CLAUDE.md",
+      "grep -qF -- '- test : `.venv/bin/python -I scripts/check_versions.py && .venv/bin/pio test -e native`' CLAUDE.md",
+      "grep -qE '^### ✅ P0-3' docs/ROADMAP.md",
+      "grep -qE '^### ✅ P0-4' docs/ROADMAP.md",
+      "grep -qE '^### ✅ P0-5' docs/ROADMAP.md",
+      "! git ls-files --error-unmatch docs/ROADMAP.md 2>/dev/null"
+    ],
+    "tests": [],
+    "passes": true
+  }
+]
