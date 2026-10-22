@@ -257,25 +257,28 @@
       document.getElementById(eleId).append(wrapper)
     }
 
-    function sendAction(action, ele) {
+    function postApi(url, params, onDone) {
       var xhttp = new XMLHttpRequest();
-      xhttp.open("GET", "api/action?" + action, true);
-      xhttp.send();
-      ele.blur();
+      xhttp.onreadystatechange = function () {
+        if (this.readyState == 4 && onDone) onDone(this.status == 200);
+      };
+      xhttp.open("POST", url, true);
+      xhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+      xhttp.setRequestHeader("X-MaxPV", "1");
+      xhttp.send(new URLSearchParams(params).toString());
+    }
+
+    function sendAction(action, ele, onDone) {
+      postApi("api/action", [[action, ""]], onDone);
+      if (ele) ele.blur();
       alert('Commande envoyée !', 'success', 'liveAlertPlaceholder');
       fillParam();
     }
 
     function sendParam(param, ele) {
-      var xhttp = new XMLHttpRequest();
-      var args = "api/set?param=";
       var num_param = paramList.indexOf(param);
       var value_param = document.getElementById(param).value;
-      args += num_param;
-      args += "&value=";
-      args += value_param;
-      xhttp.open("GET", args, true);
-      xhttp.send();
+      postApi("api/set", [["param", num_param], ["value", value_param]]);
       ele.blur();
       alert('Nouvelle valeur du paramètre envoyée !', 'success', 'liveAlertPlaceholder');
     }

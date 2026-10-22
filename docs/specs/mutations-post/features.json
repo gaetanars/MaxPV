@@ -1,0 +1,107 @@
+[
+  {
+    "id": "F1",
+    "description": "isNumericParamValue dans maxpv_validate.h, couverte par un test natif",
+    "criteres_acceptation": [
+      "test -f MaxPV3/maxpv_validate.h",
+      "grep -qE 'inline bool isNumericParamValue *\\( *const char *\\* *s *\\)' MaxPV3/maxpv_validate.h",
+      "! grep -qE '#include *<Arduino' MaxPV3/maxpv_validate.h",
+      "grep -qF '#include \"maxpv_validate.h\"' test/test_param_value/test_main.cpp",
+      "grep -qF '5#FORMAT' test/test_param_value/test_main.cpp",
+      "grep -qF '1,END#FORMAT' test/test_param_value/test_main.cpp",
+      "pio test -e native -f test_param_value"
+    ],
+    "tests": [
+      "test_valid_values",
+      "test_rejected_values"
+    ],
+    "passes": true
+  },
+  {
+    "id": "F2",
+    "description": "Mutations en POST avec en-tête X-MaxPV (403), GET en 405, erreurs en 400",
+    "criteres_acceptation": [
+      "test \"$(grep -cE 'webServer\\.on *\\( *\"/api/(set|action)\", *HTTP_GET' MaxPV3/MaxPV3.ino)\" -eq 2",
+      "test \"$(grep -cE 'webServer\\.on *\\( *\"/api/(set|action)\", *HTTP_POST' MaxPV3/MaxPV3.ino)\" -eq 2",
+      "grep -qF 'hasHeader(\"X-MaxPV\")' MaxPV3/MaxPV3.ino",
+      "grep -qF 'Forbidden: missing X-MaxPV header' MaxPV3/MaxPV3.ino",
+      "grep -qE '\\b405\\b' MaxPV3/MaxPV3.ino",
+      "grep -qF 'addHeader(\"Allow\", \"POST\")' MaxPV3/MaxPV3.ino",
+      "test \"$(grep -cF 'if ( !checkMutationHeader ( request ) ) return;' MaxPV3/MaxPV3.ino)\" -eq 2",
+      "! (awk '/HTTP_POST/{f=1} /HTTP_GET|HTTP_ANY/{f=0} f' MaxPV3/MaxPV3.ino | grep -E '(has|get)Param *\\(' | grep -vF ', true' | grep -q .)",
+      "! grep -q 'Access-Control' MaxPV3/MaxPV3.ino",
+      "! grep -q 'HTTP_OPTIONS' MaxPV3/MaxPV3.ino",
+      "test \"$(grep -cE 'send *\\( *200, *\"text/plain\", *F?\\(?\"?(Bad request|Unknown request)' MaxPV3/MaxPV3.ino)\" -eq 0"
+    ],
+    "tests": [],
+    "passes": false
+  },
+  {
+    "id": "F3",
+    "description": "P1-4 : param reformaté depuis l'entier et value validée avant SETPARAM",
+    "criteres_acceptation": [
+      "grep -qF '#include \"maxpv_validate.h\"' MaxPV3/MaxPV3.ino",
+      "grep -qF 'isNumericParamValue' MaxPV3/MaxPV3.ino",
+      "grep -qE 'setParamEcoPV *\\( *String *\\(' MaxPV3/MaxPV3.ino",
+      "grep -qF 'Bad request: invalid parameter' MaxPV3/MaxPV3.ino"
+    ],
+    "tests": [
+      "test_rejected_values"
+    ],
+    "passes": true
+  },
+  {
+    "id": "F4",
+    "description": "UI : toutes les mutations en POST avec X-MaxPV, plus aucune URL de mutation en query string",
+    "criteres_acceptation": [
+      "! grep -rnE 'api/(set|action)\\?' MaxPV3/data",
+      "! grep -rnE 'open\\(\"GET\", *args' MaxPV3/data",
+      "test \"$(grep -lF 'setRequestHeader(\"X-MaxPV\", \"1\")' MaxPV3/data/*.html | wc -l)\" -eq 5",
+      "for f in main index configuration wizard admin; do grep -qE 'function postApi *\\(url, params, onDone\\)' MaxPV3/data/$f.html || exit 1; done",
+      "test \"$(grep -rcF 'xhttp.open(\"POST\"' MaxPV3/data/*.html | awk -F: '{s+=$2} END {print s}')\" -eq 5"
+    ],
+    "tests": [],
+    "passes": true
+  },
+  {
+    "id": "F5",
+    "description": "admin.html : reboot chaîné au succès de eraseconfigesp",
+    "criteres_acceptation": [
+      "! grep -qF \"sendAction ( 'eraseconfigesp', this  ); sendAction ( 'rebootesp'\" MaxPV3/data/admin.html",
+      "grep -qE \"sendAction *\\( *'eraseconfigesp', *this, *function\" MaxPV3/data/admin.html",
+      "grep -qF \"Échec de l'effacement de la configuration\" MaxPV3/data/admin.html"
+    ],
+    "tests": [],
+    "passes": true
+  },
+  {
+    "id": "F6",
+    "description": "Documentation : README (API POST + X-MaxPV), ROADMAP locale (P1-2, P1-4 clos), versions cohérentes",
+    "criteres_acceptation": [
+      "grep -qF 'X-MaxPV' README.md",
+      "grep -q '405' README.md",
+      "grep -qF \"curl -X POST -H 'X-MaxPV: 1'\" README.md",
+      "grep -qE '^### ✅ P1-2' docs/ROADMAP.md",
+      "grep -qE '^### ✅ P1-4' docs/ROADMAP.md",
+      "grep -q 'mutations-post' docs/ROADMAP.md",
+      "! git ls-files --error-unmatch docs/ROADMAP.md 2>/dev/null",
+      ".venv/bin/python -I scripts/check_versions.py"
+    ],
+    "tests": [],
+    "passes": true
+  },
+  {
+    "id": "F7",
+    "description": "Build complet et CI verte",
+    "criteres_acceptation": [
+      "pio run -e d1_mini",
+      "pio run -t buildfs -e d1_mini",
+      "pio ci EcoPV3/EcoPV3.ino --project-conf ci/ecopv.ini -e nano",
+      "pio test -e native",
+      "actionlint",
+      "gh pr checks --required || gh pr checks"
+    ],
+    "tests": [],
+    "passes": false
+  }
+]
