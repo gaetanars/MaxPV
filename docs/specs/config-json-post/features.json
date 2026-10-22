@@ -81,7 +81,7 @@
       "gh pr checks --watch --fail-fast (runs GitHub Actions verts sur la PR draft)"
     ],
     "tests": [],
-    "passes": false
+    "passes": true
   },
   {
     "id": "F7",

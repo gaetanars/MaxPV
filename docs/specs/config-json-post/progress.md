@@ -8,3 +8,4 @@ date | step | result
 2026-10-23 00:07:47 | note | workflow noop lancé par erreur (sans effet, non requis en taille M) ; reviewer lancé sur le diff
 2026-10-23 00:08:11 | revue | aucun bloquant. Corrigé : note README déplacée dans la section ## API. Mineurs non traités (hors périmètre) : 200 renvoyé si configWrite déborde (marge 2048 OK), JSON.parse non géré à la restauration (préexistant), P2-8
 2026-10-23 00:08:23 | finish | F1-F5,F7 passes ; F6 reste false jusqu'aux runs GitHub Actions verts sur la PR
+2026-10-23 00:15:23 | CI | PR #5 : lint et build verts (3m34s) ; F6 passes
