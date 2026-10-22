@@ -80,6 +80,7 @@
 
 // Importation des définitions de configuration générale de MaxPV!
 #include "maxpv_defines.h"
+#include "maxpv_validate.h"
 
 // Définitions utiles pour le programme
 #define OFF         0
@@ -1972,6 +1973,21 @@ void checkTimeSet (void)
 }
 
 
+// Anti-CSRF : un en-tête personnalisé force un preflight CORS, que l'ESP ne satisfait pas
+static bool checkMutationHeader(AsyncWebServerRequest *request) {
+  if ( !request->hasHeader("X-MaxPV") ) {
+    request->send ( 403, "text/plain", F("Forbidden: missing X-MaxPV header") );
+    return false;
+  }
+  return true;
+}
+
+static void sendMethodNotAllowed(AsyncWebServerRequest *request) {
+  AsyncWebServerResponse *response = request->beginResponse ( 405, "text/plain", F("Method Not Allowed: use POST") );
+  response->addHeader("Allow", "POST");
+  request->send ( response );
+}
+
 void setWebHandlers (void) {
 
   // ***********************************************************************
@@ -2071,28 +2087,37 @@ void setWebHandlers (void) {
 
   webServer.on("/api/action", HTTP_GET, [](AsyncWebServerRequest * request)
   {
+    sendMethodNotAllowed ( request );
+  });
+
+  webServer.on("/api/action", HTTP_POST, [](AsyncWebServerRequest * request)
+  {
+    if ( !checkMutationHeader ( request ) ) return;
     String response = F("Request successfully processed");
-    if ( request->hasParam ( F("restart") ) )
+    if ( request->hasParam ( F("restart"), true ) )
       restartEcoPV ( );
-    else if ( request->hasParam ( F("resetindex") ) )
+    else if ( request->hasParam ( F("resetindex"), true ) )
       resetIndexEcoPV ( );
-    else if ( request->hasParam ( F("saveindex") ) )
+    else if ( request->hasParam ( F("saveindex"), true ) )
       saveIndexEcoPV ( );
-    else if ( request->hasParam ( F("saveparam") ) )
+    else if ( request->hasParam ( F("saveparam"), true ) )
       saveConfigEcoPV ( );
-    else if ( request->hasParam ( F("loadparam") ) )
+    else if ( request->hasParam ( F("loadparam"), true ) )
       loadConfigEcoPV ( );
-    else if ( request->hasParam ( F("format") ) )
+    else if ( request->hasParam ( F("format"), true ) )
       formatEepromEcoPV ( );
-    else if ( request->hasParam ( F("eraseconfigesp") ) )
+    else if ( request->hasParam ( F("eraseconfigesp"), true ) )
       LittleFS.remove ( F("/config.json") );
-    else if ( request->hasParam ( F("rebootesp") ) )
+    else if ( request->hasParam ( F("rebootesp"), true ) )
       shouldReboot = true;
-    else if ( request->hasParam ( F("booston") ) ) {
+    else if ( request->hasParam ( F("booston"), true ) ) {
       if ( ( tempLimitActive == OFF ) || ( ecoPVStats[TEMP_ECS].toInt() < maxTemp ) ) boostON ( );
     }
-    else if ( request->hasParam ( F("boostoff") ) ) boostOFF ( );
-    else response = F("Unknown request");
+    else if ( request->hasParam ( F("boostoff"), true ) ) boostOFF ( );
+    else {
+      request->send ( 400, "text/plain", F("Unknown request") );
+      return;
+    }
     request->send ( 200, "text/plain", response );
   });
 
@@ -2156,47 +2181,59 @@ void setWebHandlers (void) {
 
   webServer.on("/api/set", HTTP_GET, [](AsyncWebServerRequest * request)
   {
-    String response = F("Request successfully processed");
-    String mystring = "";
-    if ( ( request->hasParam ( F("param") ) ) && ( request->hasParam ( F("value") ) )
-         && ( request->getParam(F("param"))->value().toInt() > 0 ) && ( request->getParam(F("param"))->value().toInt() <= ( NB_PARAM - 1 ) ) ) {
-      mystring = request->getParam(F("value"))->value();
-      mystring.replace( F(","), F(".") );
-      mystring.trim();
-      setParamEcoPV ( request->getParam(F("param"))->value(), mystring );
-      // Note : la mise à jour de la base interne de MaxPV se fera de manière asynchrone
-      // setParamEcoPV() demande à EcoPV de renvoyer tous les paramètres à MaxPV
-    }
-    else if ( ( request->hasParam ( F("relaymode") ) ) && ( request->hasParam ( F("value") ) ) ) {
-      mystring = request->getParam("value")->value();
-      mystring.trim();
-      if ( mystring == F("stop") )        relayModeEcoPV ( STOP );
-      else if ( mystring == F("force") )  relayModeEcoPV ( FORCE );
-      else if ( mystring == F("auto") )   relayModeEcoPV ( AUTOM );
-      else response = F("Bad request");
-      // on déacive relay+ s'il était activé
-      relaisPlusIndex = -1;
-    }
-    else if ( ( request->hasParam ( F("ssrmode") ) ) && ( request->hasParam ( F("value") ) ) ) {
-      mystring = request->getParam(F("value"))->value();
-      mystring.trim();
-      if ( mystring == F("stop") )        SSRModeEcoPV ( STOP );
-      else if ( mystring == F("force") )  SSRModeEcoPV ( FORCE );
-      else if ( mystring == F("auto") )   SSRModeEcoPV ( AUTOM );
-      else response = F("Bad request");
-    }
-    else response = F("Bad request or request unknown");
-    request->send ( 200, "text/plain", response );
+    sendMethodNotAllowed ( request );
   });
 
   webServer.on("/api/set", HTTP_POST, [](AsyncWebServerRequest * request)
   {
+    if ( !checkMutationHeader ( request ) ) return;
+    String mystring = "";
     if ( ( request->hasParam ( F("configmaxpv"), true ) ) && ( request->hasParam ( F("value"), true ) ) ) {
       if ( configRead ( request->getParam(F("value"), true)->value() ) ) {
         shouldSaveConfig = true;
         request->send ( 200, "text/plain", F("Request successfully processed") );
       }
       else request->send ( 400, "text/plain", F("Bad request: invalid configuration") );
+    }
+    else if ( ( request->hasParam ( F("param"), true ) ) && ( request->hasParam ( F("value"), true ) ) ) {
+      int p = request->getParam(F("param"), true)->value().toInt();
+      mystring = request->getParam(F("value"), true)->value();
+      mystring.replace( F(","), F(".") );
+      mystring.trim();
+      if ( ( p < 1 ) || ( p > ( NB_PARAM - 1 ) ) || !isNumericParamValue ( mystring.c_str() ) )
+        request->send ( 400, "text/plain", F("Bad request: invalid parameter") );
+      else {
+        setParamEcoPV ( String ( p ), mystring );
+        // Note : la mise à jour de la base interne de MaxPV se fera de manière asynchrone
+        // setParamEcoPV() demande à EcoPV de renvoyer tous les paramètres à MaxPV
+        request->send ( 200, "text/plain", F("Request successfully processed") );
+      }
+    }
+    else if ( ( request->hasParam ( F("relaymode"), true ) ) && ( request->hasParam ( F("value"), true ) ) ) {
+      mystring = request->getParam(F("value"), true)->value();
+      mystring.trim();
+      if ( mystring == F("stop") )        relayModeEcoPV ( STOP );
+      else if ( mystring == F("force") )  relayModeEcoPV ( FORCE );
+      else if ( mystring == F("auto") )   relayModeEcoPV ( AUTOM );
+      else {
+        request->send ( 400, "text/plain", F("Bad request") );
+        return;
+      }
+      // on désactive relay+ s'il était activé
+      relaisPlusIndex = -1;
+      request->send ( 200, "text/plain", F("Request successfully processed") );
+    }
+    else if ( ( request->hasParam ( F("ssrmode"), true ) ) && ( request->hasParam ( F("value"), true ) ) ) {
+      mystring = request->getParam(F("value"), true)->value();
+      mystring.trim();
+      if ( mystring == F("stop") )        SSRModeEcoPV ( STOP );
+      else if ( mystring == F("force") )  SSRModeEcoPV ( FORCE );
+      else if ( mystring == F("auto") )   SSRModeEcoPV ( AUTOM );
+      else {
+        request->send ( 400, "text/plain", F("Bad request") );
+        return;
+      }
+      request->send ( 200, "text/plain", F("Request successfully processed") );
     }
     else request->send ( 400, "text/plain", F("Bad request or request unknown") );
   });
