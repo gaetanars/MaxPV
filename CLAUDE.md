@@ -47,7 +47,7 @@ MaxPV! (`MAXPV_VERSION` / `MAXPV_VERSION_FULL` dans `maxpv_defines.h`), site Web
 
 ## Contrat agentique
 
-- test : `.venv/bin/python -I scripts/check_versions.py && .venv/bin/pio test -e native`
+- test : `.venv/bin/python -I scripts/check_versions.py && .venv/bin/python -I scripts/check_blueprints.py && .venv/bin/pio test -e native`
 - lint : `actionlint`
 - typecheck : none
 - build : `.venv/bin/pio run -e d1_mini && .venv/bin/pio run -t buildfs -e d1_mini && .venv/bin/pio ci EcoPV3/EcoPV3.ino --project-conf ci/ecopv.ini -e nano`
@@ -56,5 +56,5 @@ MaxPV! (`MAXPV_VERSION` / `MAXPV_VERSION_FULL` dans `maxpv_defines.h`), site Web
 - contraintes :
   - aucun push de tag, aucun changement des réglages GitHub du dépôt ;
   - `Librairies IDE/` et les sources des sketches (`*.ino`, `*.h`) ne sont modifiés que s'ils sont explicitement listés dans la SPEC en cours ;
-  - `.venv/` (PlatformIO épinglé, même version que la CI) et `CLAUDE.local.md` restent hors git (`.git/info/exclude`) ;
+  - `.venv/` (PlatformIO 6.2.0 et PyYAML 6.0.2 épinglés, mêmes versions que la CI) et `CLAUDE.local.md` restent hors git (`.git/info/exclude`) ;
   - validation finale d'un changement de CI = runs GitHub Actions verts sur la PR.
