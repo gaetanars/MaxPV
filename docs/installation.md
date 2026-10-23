@@ -4,7 +4,7 @@
 
 L'installation se fait par USB : Arduino Nano d'abord, puis Wemos/ESP8266.
 
-- Nano : IDE Arduino (version conseillée : 1.8.x), bibliothèques OneWire et DallasTemperature (et SSD1306Ascii pour l'écran oLed).
+- Nano : IDE Arduino 2.x (ou arduino-cli) avec le paquet *Arduino AVR Boards*, bibliothèques OneWire et DallasTemperature (et SSD1306Ascii pour l'écran oLed).
 - Wemos : un câble USB (pilote CH340 si le port n'apparaît pas), et soit Chrome/Edge (page esptool-js, rien à installer), soit [esptool](https://github.com/espressif/esptool) (Python).
 - Réseau local en Wifi (adresse IP attribuée par DHCP par défaut). Pendant l'installation, un ordinateur ou un téléphone doit pouvoir se connecter temporairement au Wifi du Wemos.
 
@@ -17,12 +17,21 @@ Schémas électroniques et liste des composants : [`SchemasMaxPV/`](../SchemasMa
 > [!WARNING]
 > Si vous migrez un système EcoPV existant, notez les paramètres du routeur : ils sont effacés et doivent être ressaisis à la fin de l'installation.
 
-1. Ouvrez [`EcoPV3/EcoPV3.ino`](../EcoPV3/EcoPV3.ino) dans l'IDE Arduino configuré pour l'Arduino Nano.
+1. Ouvrez [`EcoPV3/EcoPV3.ino`](../EcoPV3/EcoPV3.ino) dans l'IDE Arduino configuré pour la carte « Arduino Nano » et le processeur « ATmega328P » (ou « ATmega328P (Old Bootloader) » si le téléversement échoue, fréquent sur les clones).
 2. Installez le cas échéant les bibliothèques OneWire et DallasTemperature.
 3. Écran oLed : dé-commentez la ligne 47 et vérifiez que SSD1306Ascii est installée.
 4. Pour que l'énergie délivrée en modes FORCE et BOOST ne soit pas comptée dans l'index d'énergie routée, modifiez la ligne 65.
 5. Les modes par défaut du SSR et du relais à la mise sous tension se règlent aux lignes 118 et 120.
 6. Téléversez le programme dans le Nano.
+
+Équivalent en ligne de commande avec [arduino-cli](https://arduino.github.io/arduino-cli/) (remplacez le port par celui de votre Nano ; pour un clone à l'ancien bootloader, utilisez `arduino:avr:nano:cpu=atmega328old`) :
+
+```
+arduino-cli core install arduino:avr
+arduino-cli lib install OneWire DallasTemperature SSD1306Ascii
+arduino-cli compile --fqbn arduino:avr:nano:cpu=atmega328 EcoPV3
+arduino-cli upload --fqbn arduino:avr:nano:cpu=atmega328 -p /dev/ttyUSB0 EcoPV3
+```
 
 ## Programmation du Wemos
 
