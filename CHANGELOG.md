@@ -12,7 +12,7 @@ Versions : MaxPV! 4.0.0, site Web 4.0.0, EcoPV 3.6.1. **Rupture avec la 3.x** : 
 - Nouvelle interface web à 5 onglets (Pico CSS, JS vanilla, sans ressource externe).
 - Watchdog MQTT.
 - Blueprints Home Assistant : BOOST programmé, RelayPlus, relais miroir.
-- Installation initiale par une image unique `MaxPV3_full.bin` (firmware + filesystem).
+- Installation initiale par une image unique `MaxPV_full.bin` (firmware + filesystem).
 
 ### Modifié
 - DHCP par défaut (IP fixe optionnelle) ; le portail Wifi ne gère plus que le Wifi ; l'activation de MQTT dépend de la seule présence d'un hôte.

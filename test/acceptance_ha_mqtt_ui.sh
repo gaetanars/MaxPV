@@ -57,7 +57,7 @@ chk F11.b ".venv/bin/python -I scripts/check_blueprints.py"
 # F12
 chk F12.a "test ! -e 'Documentation API' && test ! -e scripts/test_elegantota_v4.py && test ! -e images/mainpage.png"
 chk F12.b "! grep -nE '^## (API|Relais distant|Accès au système de fichiers par FTP|Accès TELNET)' README.md && ! grep -n 'images/mainpage' README.md"
-chk F12.c "grep -q 'MaxPV3_full.bin' README.md && grep -q 'mosquitto_pub' README.md && grep -q 'blueprints/automation/maxpv' README.md && grep -qi 'Pico' README.md && grep -qE 'Jetblack31|Bernard Legrand' README.md && grep -q 'V 4.00' README.md"
+chk F12.c "grep -q 'MaxPV_full.bin' README.md && grep -q 'mosquitto_pub' README.md && grep -q 'blueprints/automation/maxpv' README.md && grep -qi 'Pico' README.md && grep -qE 'Jetblack31|Bernard Legrand' README.md && grep -q 'V 4.00' README.md"
 chk F12.d "! grep -nE 'API_MaxPV|/api/' CLAUDE.md && grep -q 'handleCommand' CLAUDE.md && grep -q 'pio run -t buildfs -e d1_mini && ' CLAUDE.md"
 chk F12.e "grep -q 'ha-mqtt-ui' docs/ROADMAP.md"
 # F13 (hors pio et gh)

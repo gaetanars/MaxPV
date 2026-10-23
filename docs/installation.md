@@ -26,13 +26,13 @@ Schémas électroniques et liste des composants : [`SchemasMaxPV/`](../SchemasMa
 
 ## Programmation du Wemos
 
-1. Téléchargez l'image complète (firmware + filesystem) : <https://github.com/gaetanars/MaxPV/releases/latest/download/MaxPV3_full.bin>
+1. Téléchargez l'image complète (firmware + filesystem) : <https://github.com/gaetanars/MaxPV/releases/latest/download/MaxPV_full.bin>
 2. Branchez le Wemos en USB.
-3. Avec esptool-js : ouvrez <https://espressif.github.io/esptool-js/> dans Chrome ou Edge, **Connect**, choisissez le port, **Erase Flash**, puis **Flash Address** `0x0` avec `MaxPV3_full.bin` et **Program**.
+3. Avec esptool-js : ouvrez <https://espressif.github.io/esptool-js/> dans Chrome ou Edge, **Connect**, choisissez le port, **Erase Flash**, puis **Flash Address** `0x0` avec `MaxPV_full.bin` et **Program**.
 4. Ou en ligne de commande (esptool 5.x) :
 
    ```
-   esptool --chip esp8266 write-flash --erase-all 0x0 MaxPV3_full.bin
+   esptool --chip esp8266 write-flash --erase-all 0x0 MaxPV_full.bin
    ```
 
 5. Redémarrez le Wemos et connectez-vous au réseau Wifi **MaxPV** qu'il crée. Un portail captif s'ouvre ; sinon, allez sur <http://192.168.4.1>.
@@ -57,7 +57,7 @@ Schémas électroniques et liste des composants : [`SchemasMaxPV/`](../SchemasMa
 ## Mises à jour
 
 - **Nano** : par USB, comme ci-dessus.
-- **Wemos** : en OTA par Wifi, via le lien **Update** (`/update`) de l'onglet Système. Ordre à suivre : **firmware puis filesystem**. Utilisez les fichiers `MaxPV3_firmware.bin` puis `MaxPV3_filesystem.bin` de la [dernière release](https://github.com/gaetanars/MaxPV/releases/latest).
+- **Wemos** : en OTA par Wifi, via le lien **Update** (`/update`) de l'onglet Système. Ordre à suivre : **firmware puis filesystem**. Utilisez les fichiers `MaxPV_firmware.bin` puis `MaxPV_filesystem.bin` de la [dernière release](https://github.com/gaetanars/MaxPV/releases/latest).
 - La mise à jour du filesystem efface la configuration Wifi : reconfigurez-la via le réseau **MaxPV** (portail à 192.168.4.1). Faites avant une sauvegarde de la configuration (onglet Système).
 - En cas d'échec, reprenez « Programmation du Wemos » (efface toute la configuration du Wemos).
 
@@ -71,7 +71,7 @@ La 4.0.0 est une rupture.
 
 - Configuration : l'IP fixe d'une config 3.x est conservée (si la passerelle, le masque ou le DNS1 sont invalides : DHCP). Les clés inconnues sont ignorées. L'activation de MQTT dépend uniquement de la présence d'un hôte MQTT. Le port HTTP est fixe (80).
 - Anciens topics : `maxpv/vrms` … `maxpv/temperature`, `maxpv/state` et `maxpv/SYS/*` ne sont plus publiés, mais leurs messages retain restent sur le broker ([purge](home-assistant.md#purge-des-anciens-topics-retain)).
-- Reflashez le Nano en 3.6.1, puis le Wemos (firmware puis filesystem, ou `MaxPV3_full.bin`).
+- Reflashez le Nano en 3.6.1, puis le Wemos (firmware puis filesystem, ou `MaxPV_full.bin`).
 
 ## Compilation avec PlatformIO
 

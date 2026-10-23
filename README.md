@@ -65,7 +65,7 @@ Détail de chaque étape dans [docs/installation.md](docs/installation.md).
 
 1. **Matériel** : réalisez la carte ([schémas](SchemasMaxPV/)).
 2. **Nano** : téléversez [`EcoPV3/EcoPV3.ino`](EcoPV3/EcoPV3.ino) avec l'IDE Arduino.
-3. **Wemos** : flashez [`MaxPV3_full.bin`](https://github.com/gaetanars/MaxPV/releases/latest/download/MaxPV3_full.bin) à l'adresse `0x0`.
+3. **Wemos** : flashez [`MaxPV_full.bin`](https://github.com/gaetanars/MaxPV/releases/latest/download/MaxPV_full.bin) à l'adresse `0x0`.
 4. **Wifi** : connectez-vous au réseau **MaxPV** et choisissez votre Wifi dans le portail captif.
 5. **MQTT** : ouvrez <http://maxpv.local/>, onglet **Réseau**, saisissez l'hôte du broker ; l'appareil apparaît dans Home Assistant.
 
