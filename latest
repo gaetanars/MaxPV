@@ -1,6 +1,6 @@
 {
   "ecopvver" : "3.60",
-  "maxpvver" : "3.61",
-  "webver" : "3.63",
-  "whatsnew" : "Nouveautés : Correction des sources script pour affichage des graphiques. Voir les informations sur GitHub : https://github.com/gaetanars/MaxPV"
+  "maxpvver" : "4.00",
+  "webver" : "4.00",
+  "whatsnew" : "MaxPV! 4.00 : Home Assistant via MQTT en priorité (autodiscovery complète, paramètres, réglages et boutons), nouvelle interface web à 5 onglets sans ressource externe, watchdog MQTT, blueprints HA pour BOOST programmé, RelayPlus et relais miroir. Retirés : API HTTP, historique, FTP, NTP, relais distant. Voir le README : https://github.com/gaetanars/MaxPV"
 }

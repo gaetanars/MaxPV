@@ -28,7 +28,8 @@ Légende des priorités :
 | P1-2, P1-4 | ✅ toutes les mutations (`/api/action`, `/api/set`) en `POST` avec en-tête `X-MaxPV` obligatoire (403 sinon), GET → 405, erreurs → 400 ; `param` reformaté depuis l'entier, `value` validée par `isNumericParamValue` (test natif) ; reboot chaîné au succès de l'effacement dans `admin.html`. Test sur appareil à faire | `1c8349a` (spec `mutations-post`, PR #6 mergée, CI verte) |
 | P1-9, P3-4 | ✅ réglés en marge : reboot chaîné au succès de la sauvegarde (`admin.html:62-67`) ; `whatsnew` affiché via `textContent` (`main.html:175`) | PR #5, PR #3 |
 | P1-3, P2-8 | ✅ `mqtt_pass` retiré de `/api/get?configmaxpv` et `/DLconfig` (`sendConfig`), vide/absent = conservé, `mqtt_user` vide = effacé ; test sur appareil à faire | `c1ea113` (PR #8, branche `fix/mqtt-pass-masque`) |
-| P1-5 à P1-8, P2-1 à P2-7, P2-9, P3-1 à P3-3, P3-5, P3-7 à P3-9 | ☐ non traités (`EcoPV3.ino` intact) | |
+| P1-5, P2-3, P2-4, P2-5 (côté ESP), P2-6 et P2-7 (côté UI), P2-9, P3-2, P3-3, P3-5, P3-6, P3-8, P3-9 | ✅ traités ou rendus obsolètes (MaxPV! 4.00 : lecture du payload sur `len`, historique, index journaliers, planificateur, NTP et ancienne API supprimés, topics `maxpv/<id>`, `NTPClient` retiré) | spec `ha-mqtt-ui` (branche `agent/ha-mqtt-ui`, validation CI et matériel à faire) |
+| P1-6 à P1-8, P2-1, P2-2, P3-1, P3-7 | ☐ non traités (`EcoPV3.ino` intact) | |
 
 Notes de livraison :
 - Versions épinglées (PlatformIO 6.2.0, plateforme et libs exactes) ; pile async esp32async ; ElegantOTA 4.0.0 (AGPL-3.0, cf. `credits.html` et README).

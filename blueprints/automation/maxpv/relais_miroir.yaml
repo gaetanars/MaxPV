@@ -1,0 +1,43 @@
+blueprint:
+  name: MaxPV! - Relais en miroir
+  description: >
+    Recopie l'état du relais secondaire de MaxPV! (binary_sensor EtatRelais)
+    sur un interrupteur distant : ON suit ON, OFF suit OFF. Remplace le relais
+    distant des versions 3.x.
+  domain: automation
+  author: gaetanars
+  source_url: https://github.com/gaetanars/MaxPV/blob/main/blueprints/automation/maxpv/relais_miroir.yaml
+  input:
+    etat_relais:
+      name: État du relais MaxPV!
+      description: Entité binary_sensor « État du relais ».
+      selector:
+        entity:
+          filter:
+            - domain: binary_sensor
+    cible:
+      name: Interrupteur à piloter
+      selector:
+        entity:
+          filter:
+            - domain: switch
+mode: restart
+triggers:
+  - trigger: state
+    entity_id: !input etat_relais
+    to:
+      - "on"
+      - "off"
+actions:
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger.to_state.state == 'on' }}"
+        sequence:
+          - action: switch.turn_on
+            target:
+              entity_id: !input cible
+    default:
+      - action: switch.turn_off
+        target:
+          entity_id: !input cible

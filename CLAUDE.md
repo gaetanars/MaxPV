@@ -4,12 +4,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Projet
 
-MaxPV! : interface Web + API + MQTT pour le routeur solaire EcoPV (surplus PV vers chauffe-eau via SSR). Firmware embarqué, doc et UI en français. Pas de suite de tests ni de linter : la validation = compilation + test sur matériel.
+MaxPV! : Home Assistant via MQTT (autodiscovery) + interface Web de configuration pour le routeur solaire EcoPV (surplus PV vers chauffe-eau via SSR). Firmware embarqué, doc et UI en français. Tests natifs (`pio test -e native`) pour la logique pure ; le reste se valide par compilation + test sur matériel.
 
 Deux cibles matérielles, deux firmwares distincts qui dialoguent par liaison série :
 
 - **`EcoPV3/EcoPV3.ino`** : Arduino Nano. Algorithme de routage (mesures tension/courant, pilotage SSR/triac, relais secondaire, BOOST, RelayPlus, sonde 1-Wire ECS), config en EEPROM. Flashé via l'IDE Arduino ; compilé en CI avec PlatformIO (`pio ci`, `ci/ecopv.ini`).
-- **`MaxPV3/MaxPV3.ino`** : Wemos D1 mini (ESP8266). Serveur web asynchrone, API HTTP, MQTT (+ autodiscovery Home Assistant), OTA, NTP, WatchDog Wifi, relais distant en miroir, FTP optionnel. Les pages web sont dans `MaxPV3/data/` (LittleFS).
+- **`MaxPV3/MaxPV3.ino`** : Wemos D1 mini (ESP8266). Serveur web asynchrone (backend HTTP interne), MQTT (+ autodiscovery Home Assistant), OTA, WatchDog Wifi et watchdog MQTT. L'UI (une page à 5 onglets) est dans `MaxPV3/data/` (LittleFS). BOOST programmé, RelayPlus et relais miroir sont des blueprints HA (`blueprints/automation/maxpv/`, contrôlés par `scripts/check_blueprints.py`).
 
 ## Build (ESP8266)
 
@@ -22,15 +22,17 @@ pio run -e d1_mini -t upload / uploadfs
 - `pio test -e native` : tests natifs sur l'hôte (Unity, ArduinoJson), dans `test/`.
 - `platformio.ini` : `src_dir=MaxPV3`, `data_dir=MaxPV3/data` ; toutes les libs viennent de `lib_deps`, y compris la pile async esp32async (ESPAsyncWebServer / ESPAsyncTCP) et ElegantOTA (mode async via `-DELEGANTOTA_USE_ASYNC_WEBSERVER=1`).
 - `extra_script.py` extrait `MAXPV_VERSION` de `MaxPV3/maxpv_defines.h` par regex pour nommer les binaires : garder le format `#define MAXPV_VERSION "x.yy"`.
-- CI `.github/workflows/build.yml` (actions épinglées par SHA, PlatformIO et libs en versions exactes, Dependabot mensuel) : jobs `lint` (actionlint), `build` (ESP + fs, variante FTP, tests natifs `pio test -e native`, EcoPV `nano`/`nano_oled` via `ci/ecopv.ini`, image fusionnée `MaxPV<ver>_full.bin` via `esptool merge-bin` (firmware `0x0` + filesystem `0x300000`, taille contrôlée), `pio check` non bloquant) sur push `main`/PR/dispatch ; sur tag `v*`, job `release` (contrôle des versions, release publiée + `.bin`).
+- CI `.github/workflows/build.yml` (actions épinglées par SHA, PlatformIO et libs en versions exactes, Dependabot mensuel) : jobs `lint` (actionlint, `check_blueprints.py` avec `pyyaml==6.0.2`), `build` (ESP + fs, tests natifs `pio test -e native`, EcoPV `nano`/`nano_oled` via `ci/ecopv.ini`, image fusionnée `MaxPV<ver>_full.bin` via `esptool merge-bin` (firmware `0x0` + filesystem `0x300000`, taille contrôlée), `pio check` non bloquant) sur push `main`/PR/dispatch ; sur tag `v*`, job `release` (contrôle des versions, release publiée + `.bin`).
 - Le firmware EcoPV se flashe via l'IDE Arduino (libs OneWire, DallasTemperature, SSD1306Ascii optionnelle pour l'écran oLed).
 
 ## Architecture
 
-- **Protocole série Nano -> ESP** (500000 bauds, `maxpv_defines.h`) : l'Arduino émet des chaînes CSV `STATS,...,END#` (`#` = `END_OF_TRANSMIT`). `serialProcess()` dans `MaxPV3.ino` les parse dans `ecoPVStats[]` (indices `INDEX_*` et `NB_STATS` dans `maxpv_defines.h`). L'ordre des champs côté `EcoPV3.ino` (~l.764) et les constantes d'index côté ESP doivent rester synchronisés. L'ESP envoie des commandes à l'Arduino (`setParamEcoPV`, `SSRModeEcoPV`, `boostModeEcoPV`, `relayPlusEcoPV`, …).
-- **MaxPV3.ino** : `setup()`/`loop()` + planificateur `TickerScheduler` (`setTsTasks`, `eachSecondTasks`, `timeScheduler` pour BOOST/RelayPlus programmés). Config ESP en JSON LittleFS (`configWrite`, taille `JSON_CONFIG_SIZE`). Routes HTTP/API dans `setWebHandlers()` (`/api/get`, `/api/set`, `/api/action`, `/api/history`) ; doc API : `Documentation API/API_MaxPV.pdf` (à tenir à jour si l'API change).
-- `maxpv_defines.h` : constantes (version, ports, buffers série, défauts réseau). `maxpv_options.h` : options de compilation (`MAXPV_FTP_SERVER` à dé-commenter, flags de libs à ne pas toucher).
-- **Frontend** `MaxPV3/data/*.html` + `maxpv.css` : pages statiques qui appellent l'API ; embarqué dans l'image LittleFS (un changement UI nécessite `buildfs`/`uploadfs` ou OTA filesystem).
+- **Protocole série Nano -> ESP** (500000 bauds, `maxpv_defines.h`) : l'Arduino émet des chaînes CSV `STATS,...,END#` (`#` = `END_OF_TRANSMIT`). `serialProcess()` dans `MaxPV3.ino` les parse dans `ecoPVStats[]` (indices `INDEX_*` et `NB_STATS` dans `maxpv_defines.h`). L'ordre des champs côté `EcoPV3.ino` (~l.764) et les constantes d'index côté ESP doivent rester synchronisés. L'ESP envoie des commandes à l'Arduino (`setParamEcoPV`, `SSRModeEcoPV`, `relayModeEcoPV`, `boostModeEcoPV`, …).
+- **MaxPV3.ino** : `setup()`/`loop()` + planificateur `TickerScheduler` (`setTsTasks`, `eachSecondTasks`). Config ESP en JSON LittleFS (16 clés, `configWrite`, `configBounded`, taille `JSON_CONFIG_SIZE`). MQTT : base `maxpv/<id>` (`<id>` = `maxpv` + chip id), `/status` (LWT), `/state` et `/params` (JSON retain), commandes `maxpv/<id>/<clé>/set`.
+- **`MaxPV3/maxpv_mqtt.h`** : fonctions pures testées en natif (`test/test_mqtt`) : table PROGMEM des entités HA, discovery (`mqttDiscoveryTopic`/`mqttDiscoveryPayload`), `buildStateJson`, `buildParamsJson` et `handleCommand` (validation unique des commandes, appelée par `onMqttMessage` et `POST /cmd` ; `format` et `eraseconfigesp` HTTP seulement ; hors bornes = rejeté).
+- **Backend HTTP interne** (`setWebHandlers()`, non documenté) : fichiers statiques, `GET /status`, `/params`, `/config` (sans `mqtt_pass`), `/backup`, `POST /config` et `POST /cmd` (en-tête `X-MaxPV` obligatoire, sinon 403 ; GET sur une route POST = 405 ; autre route = 404 `text/plain`), `/update` (ElegantOTA).
+- `maxpv_defines.h` : constantes (version, buffers série, watchdogs, défauts réseau). `maxpv_options.h` : flags de libs à ne pas toucher.
+- **Frontend** `MaxPV3/data/` : `index.html` (5 sections `tab-*`), `app.js` (JS vanilla, fonction `post()` unique), `pico.min.css` (Pico 2.1.1, copie exacte, ne pas modifier), `maxpv.css`. Aucune ressource externe ; embarqué dans l'image LittleFS (un changement UI nécessite `buildfs`/`uploadfs` ou OTA filesystem).
 
 ## Versions : trois numéros indépendants
 
@@ -41,9 +43,9 @@ MaxPV! (`MAXPV_VERSION` / `MAXPV_VERSION_FULL` dans `maxpv_defines.h`), site Web
 
 ## Points d'attention
 
-- Contraintes mémoire ESP8266 : réponses HTTP volumineuses du relais distant => redémarrage (cf. README) ; préférer `F()` / `PROGMEM` et éviter les gros `String` temporaires.
+- Contraintes mémoire ESP8266 : discovery de 59 entités publiée une par passage de `loop()` avec un buffer unique ; préférer `F()` / `PROGMEM` et éviter les gros `String` temporaires.
 - Ordre de mise à jour documenté : firmware puis filesystem ; la MAJ du filesystem efface la config Wifi.
-- Origine : fork de Jetblack31/MaxPV (licence LGPL 2.1+ en en-têtes, attribution conservée dans credits.html) ; ce fork est autonome, l'UI ne référence plus l'amont hors crédits et aide EcoPV.
+- Origine : fork de Jetblack31/MaxPV (licence LGPL 2.1+ en en-têtes, attribution conservée dans l'onglet Système de l'UI et le README) ; ce fork est autonome, l'UI ne référence plus l'amont hors crédits et aide EcoPV.
 
 ## Contrat agentique
 
