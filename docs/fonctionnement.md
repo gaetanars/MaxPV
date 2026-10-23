@@ -17,7 +17,7 @@ Page unique <http://maxpv.local/>, cinq onglets :
 
 ## Modes du SSR et du relais secondaire
 
-Le mode normal est **AUTO** : le routeur dirige le surplus photovoltaïque vers la résistance du chauffe-eau (SSR) et vers la charge secondaire de délestage éventuellement connectée au relais. On peut forcer la marche (**FORCE**) ou l'arrêt (**STOP**) depuis l'onglet État ou depuis Home Assistant (selects `SSR` et `Relais`). Les modes par défaut à la mise sous tension se règlent dans `EcoPV3.ino` aux lignes 118 et 120.
+Le mode normal est **AUTO** : le routeur dirige le surplus photovoltaïque vers la résistance du chauffe-eau (SSR) et vers la charge secondaire de délestage éventuellement connectée au relais. On peut forcer la marche (**FORCE**) ou l'arrêt (**STOP**) depuis l'onglet État ou depuis Home Assistant (selects `SSR` et `Relais`). Les modes par défaut à la mise sous tension se règlent dans `EcoPV.ino` aux lignes 118 et 120.
 
 Le relais secondaire fonctionne en AUTO même si le SSR ne l'est pas : le surplus correspond alors à la puissance exportée vers le réseau, et non à la puissance routée par le SSR.
 
@@ -43,6 +43,6 @@ Avec une sonde 1-Wire, la température est publiée. Si la limite est activée (
 
 ## Allocation des pins de l'Arduino Nano
 
-Les pins sont configurables dans `EcoPV3.ino` selon votre circuit, avec les contraintes du tableau ci-dessous. La pin D9 sert à la sonde 1-Wire depuis la 3.60.
+Les pins sont configurables dans `EcoPV.ino` selon votre circuit, avec les contraintes du tableau ci-dessous. La pin D9 sert à la sonde 1-Wire depuis la 3.60.
 
-![Pins EcoPV3](../images/Pin_allocation.png)
+![Pins EcoPV](../images/Pin_allocation.png)

@@ -2,7 +2,7 @@ import os
 import re
 Import("env")
 
-SOURCECODE = "./MaxPV3/maxpv_defines.h"
+SOURCECODE = "./MaxPV/maxpv_defines.h"
 
 # Search Version
 version = ""

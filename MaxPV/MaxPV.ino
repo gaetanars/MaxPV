@@ -1,5 +1,5 @@
 /*
-  MaxPV_ESP.ino - ESP8266 program that provides a web interface and a API for EcoPV 3+
+  MaxPV.ino - ESP8266 program that provides a web interface and a API for EcoPV
   Copyright (C) 2022 - Bernard Legrand 
   maxpv@bernard-legrand.net
   https://github.com/Jetblack31/

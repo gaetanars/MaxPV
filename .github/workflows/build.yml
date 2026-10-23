@@ -82,9 +82,9 @@ jobs:
         run: pio test -e native
 
       - name: Build EcoPV (Nano)
-        run: pio ci EcoPV3/EcoPV3.ino --project-conf ci/ecopv.ini -e nano
+        run: pio ci EcoPV/EcoPV.ino --project-conf ci/ecopv.ini -e nano
       - name: Build EcoPV (Nano, écran oLed)
-        run: pio ci EcoPV3/EcoPV3.ino --project-conf ci/ecopv.ini -e nano_oled
+        run: pio ci EcoPV/EcoPV.ino --project-conf ci/ecopv.ini -e nano_oled
 
       - name: Static analysis (non bloquant)
         continue-on-error: true
