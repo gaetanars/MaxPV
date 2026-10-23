@@ -1,5 +1,5 @@
 // Vérifie que JSON_CONFIG_SIZE accueille une configuration aux longueurs
-// maximales de l'UI, en lecture (valeurs en chaînes, comme admin.html) et
+// maximales de l'UI, en lecture (valeurs en chaînes, comme app.js) et
 // en écriture (copies de String, comme configWrite()).
 #include <ArduinoJson.h>
 #include <string>
@@ -16,7 +16,8 @@ struct Entry {
 
 static std::string repeat(char c, size_t n) { return std::string(n, c); }
 
-// 29 clés de configWrite(), valeurs à longueur max
+// 16 clés de config.json (R2 de la SPEC ha-mqtt-ui), valeurs à longueur max :
+// hôte MQTT 64, user 39, pass 39 avec &#+%"\, IP 15.
 static std::vector<Entry> maxConfig() {
   return {
       {"ip", IP_MAX},
@@ -24,36 +25,32 @@ static std::vector<Entry> maxConfig() {
       {"subnet", IP_MAX},
       {"dns1", IP_MAX},
       {"dns2", IP_MAX},
-      {"http_port", "65535"},
       {"watchdogwifi_active", "1"},
-      {"boost_duration", "600"},
-      {"boost_ratio", "100"},
-      {"mqtt_ip", IP_MAX},
+      {"watchdogmqtt_active", "1"},
+      {"mqtt_ip", repeat('h', 64)},
       {"mqtt_port", "65535"},
-      {"mqtt_period", "3600"},
       {"mqtt_user", repeat('u', 39)},
       {"mqtt_pass", "&#+%\"\\" + repeat('p', 33)},
-      {"mqtt_active", "1"},
-      {"boost_timer_hour", "23"},
-      {"boost_timer_minute", "59"},
-      {"boost_timer_active", "1"},
-      {"remoterelay_active", "1"},
-      {"remoterelay_ip", IP_MAX},
-      {"remoterelay_port", "65535"},
-      {"remoterelay_on", repeat('n', 127)},
-      {"remoterelay_off", repeat('f', 127)},
-      {"RelayPlus_min", "1200"},
-      {"RelayPlus_max", "1380"},
-      {"RelayPlus_hour", "23"},
-      {"RelayPlus_active", "1"},
+      {"mqtt_period", "3600"},
+      {"boost_duration", "600"},
+      {"boost_ratio", "100"},
       {"max_temp", "90"},
       {"temp_limit_active", "1"},
   };
 }
 
+static const int MQTT_PASS_INDEX = 10;
+
+// JSON_CONFIG_SIZE doit etre reduit (ancienne valeur : 2048 pour 29 cles ; 1024 max)
+void test_config_size_reduced() {
+  TEST_ASSERT_LESS_OR_EQUAL(1024, JSON_CONFIG_SIZE);  // natif 64 bits : ~870 utilises
+  TEST_ASSERT_GREATER_THAN(0, JSON_CONFIG_SIZE);
+}
+
 void test_deserialize_max_config() {
   std::vector<Entry> cfg = maxConfig();
-  TEST_ASSERT_EQUAL(29, cfg.size());
+  TEST_ASSERT_EQUAL(16, cfg.size());
+  TEST_ASSERT_EQUAL(39, cfg[MQTT_PASS_INDEX].value.size());
 
   // JSON tel que l'envoie l'UI (JSON.stringify), puis lu depuis un std::string
   DynamicJsonDocument src(8192);
@@ -66,7 +63,7 @@ void test_deserialize_max_config() {
   TEST_MESSAGE(("memoryUsage deserialize = " + std::to_string(doc.memoryUsage()) +
                 " / " + std::to_string(JSON_CONFIG_SIZE)).c_str());
   TEST_ASSERT_EQUAL_STRING("Ok", err.c_str());
-  TEST_ASSERT_EQUAL_STRING(cfg[13].value.c_str(), doc["mqtt_pass"].as<const char *>());
+  TEST_ASSERT_EQUAL_STRING(cfg[MQTT_PASS_INDEX].value.c_str(), doc["mqtt_pass"].as<const char *>());
 }
 
 void test_write_roundtrip() {
@@ -84,11 +81,12 @@ void test_write_roundtrip() {
   DynamicJsonDocument back(JSON_CONFIG_SIZE);
   DeserializationError err = deserializeJson(back, out);
   TEST_ASSERT_EQUAL_STRING("Ok", err.c_str());
-  TEST_ASSERT_EQUAL_STRING(cfg[13].value.c_str(), back["mqtt_pass"].as<const char *>());
+  TEST_ASSERT_EQUAL_STRING(cfg[MQTT_PASS_INDEX].value.c_str(), back["mqtt_pass"].as<const char *>());
 }
 
 int main(int, char **) {
   UNITY_BEGIN();
+  RUN_TEST(test_config_size_reduced);
   RUN_TEST(test_deserialize_max_config);
   RUN_TEST(test_write_roundtrip);
   return UNITY_END();

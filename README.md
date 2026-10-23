@@ -2,9 +2,8 @@ Vous aimez ce projet ? Vous pouvez m'encourager grâce au bouton **Sponsor** dan
 Merci à tous pour vos messages et votre soutien au projet !
 
 # MaxPV!
-MaxPV! est une nouvelle interface pour EcoPV, compatible avec les montages EcoPV basés sur l'Arduino Nano et sur le Wemos ESP8266 pour la liaison Wifi. MaxPV! apporte une interface Web de configuration et de visualisation du fonctionnement, ainsi qu'une nouvelle API.
+MaxPV! est une nouvelle interface pour EcoPV, compatible avec les montages EcoPV basés sur l'Arduino Nano et sur le Wemos ESP8266 pour la liaison Wifi. MaxPV! s'intègre d'abord à Home Assistant via MQTT (autodiscovery complète) et apporte une interface Web de configuration et de dépannage.
 
-![MaxPV! main page](images/mainpage.png)  
 MaxPV! hérite d'EcoPV et de son algorithme de routage. Il sera utile de se référer au dépôt EcoPV : https://github.com/Jetblack31/EcoPV
 
 La lecture de ces fils de discussion est plus que recommandée pour la mise en oeuvre :  
@@ -19,16 +18,15 @@ Intervenir sur des circuits électriques est dangereux et nécessite le recours 
 
 ## Caractéristiques de MaxPV!
 * Même qualité de routage du surplus photovoltaïque que EcoPV.
-* Interface web responsive avec visualisation graphique des données.
-* Support pour MQTT et autodiscovery Home Assistant.
-* Installation et paramétrage réseau facilitée.
+* Home Assistant d'abord : MQTT avec autodiscovery complète (mesures, modes, paramètres du routeur, réglages, diagnostics, boutons), 59 entités.
+* Interface web à 5 onglets (Pico CSS, sans ressource externe) pour configurer et dépanner.
+* Installation et paramétrage réseau facilités (DHCP par défaut, IP fixe optionnelle).
 * Mise à jour du Wemos en OTA.
-* Assistant de configuration des paramètres du routeur.
+* Assistant d'étalonnage des paramètres du routeur.
 * Le SSR et le relais secondaire de délestage peuvent être forcés sur arrêt permanent, marche permanente, en plus du mode automatique (par défaut).
-* Mode Boost sur SSR pour complément de chauffe, manuel ou programmé.
-* Sonde de température 1-Wire pour le contrôle de la température ECS.
-* Fonction RelayPlus pour fixer des minimum et maximum de fonctionnement du relais secondaire.
-* API pour communiquer avec un serveur domotique : [Documentation API](Documentation%20API/API_MaxPV.pdf).
+* Mode Boost sur SSR pour complément de chauffe ; limite de température avec une sonde 1-Wire.
+* WatchDog Wifi et watchdog MQTT.
+* Blueprints Home Assistant : BOOST programmé, RelayPlus (durées min et max du relais) et relais miroir.
 
 ## Synoptique
 ![MaxPV! synoptique](images/synoptique.png)
@@ -39,7 +37,7 @@ Les schémas électroniques et la liste des composants nécessaires à la réali
 # Installation des firmwares
 ## Pré-requis
 L'installation de MaxPV! se fait par programmation de l'Arduino Nano et du Wemos/ESP8266 par USB. Vous aurez besoin de l'IDE Arduino pour le Nano (version conseillée : IDE Arduino 1.8.x). Pour le Wemos : un câble USB, et soit Chrome/Edge (page web esptool-js, rien à installer), soit esptool (Python).
-Le fonctionnement de MaxPV! nécessite une connexion à votre réseau local en Wifi avec une adresse IP statique. En cours d'installation, vous aurez besoin de vous connecter temporairement en Wifi au Wemos à l'aide d'un ordinateur portable ou d'un téléphone.
+Le fonctionnement de MaxPV! nécessite une connexion à votre réseau local en Wifi (l'adresse IP est attribuée par DHCP par défaut). En cours d'installation, vous aurez besoin de vous connecter temporairement en Wifi au Wemos à l'aide d'un ordinateur portable ou d'un téléphone.
 
 ## Programmation de l'Arduino Nano
 * **ATTENTION** : si vous migrez un système EcoPV existant, prenez note des paramètres du routeur ! Ceux-ci seront effacés et devront être ré-introduits à la fin de l'installation !
@@ -57,81 +55,79 @@ Le fonctionnement de MaxPV! nécessite une connexion à votre réseau local en W
 * Redémarrez le Wemos, puis connectez-vous au réseau Wifi **MaxPV** qu'il crée. Un portail captif s'ouvre, s'il ne s'ouvre pas automatiquement, connectez-vous à l'adresse http://192.168.4.1
 
 ![MaxPV! captif portal](images/captif.png)
-* Réalisez votre configuration Wifi et votre configuration IP. Pour la passerelle, indiquez l'adresse de votre 'Box internet'. Pour les serveurs DNS, indiquez l'adresse de votre 'Box internet' comme adresse DNS1, et indiquez l'adresse 8.8.8.8 pour DNS2 (8.8.8.8 correspond au service DNS de Google). Cela doit convenir à la plupart des installations domestiques. Note : Certaines 'Box internet' ont l'adresse 192.168.1.1, d'autres 192.168.1.254, 192.168.0.254 ou encore 192.168.0.1.
+* Choisissez votre réseau Wifi et saisissez son mot de passe : le portail ne gère que le Wifi. Le réseau (DHCP par défaut, IP fixe optionnelle) et MQTT se règlent ensuite dans l'interface web.
 * Vous pouvez maintenant ré-installer l'Arduino Nano et le Wemos sur la carte électronique de votre routeur.
-.
 ## Premier démarrage
 * Vérifiez que votre ordinateur / téléphone est bien connecté à votre réseau local.
-* Connectez-vous à l'adresse IP statique que vous avez attribuée au Wemos au cours de l'installation (ou à l'adresse http://maxpv.local depuis la version 3.52).
-* La page d'accueil de MaxPV! s'ouvre. Vous pouvez vérifiez que l'Arduino Nano fonctionne correctement par l'indication **Routeur running** en haut de la page.
-* Si vous êtes nouvel utilisateur de MaxPV!, rendez-vous sur la page **Assistant de configuration** et laissez-vous guider.
-* Si vous voulez entrer manuellement les paramètres du routeur que vous utilisiez précédemment :
-  * Rendez-vous sur la page **Paramètrage avancé**,
-  * Entrez vos paramètres un par un, en validant chaque paramètre,
-  * **Attention** : il y a 2 nouveaux paramètres :
-    * **P_INSTALLPV** : puissance de votre installation photovoltaïque en Wc,
-    * **CNT_CALIB** : poids des impulsions en Wh du compteur d'impulsion pour la mesure de la production PV,
-  * Mettez à 0 les index des compteurs.
-  * **Enregistrez la configuration et redémarrez le routeur**.
-* Votre routeur MaxPV! est maintenant opérationnel !
-* A tout moment, vous pouvez modifier les paramètres du routeur en utilisant de nouveau l'assistant de configuration ou en utilisant le paramétrage avancé.
+* Ouvrez http://maxpv.local/ (ou l'adresse IP du Wemos). L'en-tête de la page indique l'état du Nano (routeur), de MQTT et la version.
+* Onglet **Étalonnage** : l'assistant vous guide si vous êtes nouvel utilisateur. Sinon, saisissez vos paramètres un par un dans l'onglet **Routeur**.
+* **Attention** : 2 paramètres sont apparus avec la version 3.5 : **P_INSTALLPV** (puissance de l'installation en Wc) et **CNT_CALIB** (poids en Wh des impulsions du compteur de production).
+* Onglet **Réseau** : saisissez l'hôte du broker MQTT (laissez vide pour désactiver MQTT), puis enregistrez : le Wemos redémarre.
+* Dans Home Assistant, l'appareil MaxPV apparaît via l'autodiscovery MQTT. Utilisez le bouton « SauverParametres » (ou l'onglet Routeur) pour enregistrer les paramètres du routeur dans l'EEPROM du Nano.
 
 ## Mises à jour
-Les mises à jour de l'Arduino se font par USB comme décrit ci-dessus dans l'installation.
+Les mises à jour de l'Arduino se font par USB comme décrit ci-dessus.
 
-Les mises à jour de MaxPV! sur le Wemos se font par Wifi en OTA via la page **Update** de l'interface. **Attention** : la mise à jour du filesystem nécessitera de reconfigurer la connexion Wifi du Wemos comme décrit précédemment : se connecter au réseau Wifi MaxPV puis accéder au portail à l'adresse 192.168.4.1. A partir de la version 3.5, Le Wemos doit être placé sur le PCB avec l'Arduino Nano pour que l'interface MaxPV soit accessible.
+Les mises à jour de MaxPV! sur le Wemos se font par Wifi en OTA via le lien **Update** (`/update`) de l'onglet Système. **Attention** : la mise à jour du filesystem nécessite de reconfigurer la connexion Wifi du Wemos (réseau Wifi MaxPV, portail à l'adresse 192.168.4.1). Faites une sauvegarde de la configuration (onglet Système) avant.
 
-Pour les mises à jour, **l'ordre à suivre est** : mise à jour du firmware puis du filesystem. En cas d'échec de la mise à jour, utilisez la procédure Programmation du Wemos ci-dessus (elle efface toute la configuration du Wemos).
+Pour les mises à jour, **l'ordre à suivre est** : firmware puis filesystem. En cas d'échec, utilisez la procédure « Programmation du Wemos » (elle efface toute la configuration du Wemos).
 
 ## Installation avancée
 Si vous souhaitez compiler le firmware et le filesystem du Wemos pour réaliser une installation personnalisée, les codes sources sont disponibles dans le répertoire **"MaxPV3"**.
 
-
 # Tech zone
-## Explication du mode de fonctionnement des sorties SSR et du relais secondaire
-Le mode de fonctionnement normal des sorties SSR et relais secondaire est le **mode AUTO**. Dans ce mode, le routeur s'occupe de diriger le surplus de production photovoltaïque vers la résistance du chauffe-eau et la charge secondaire de délestage éventuellement connectée au relais.
-Toutefois, vous pouvez forcer la marche du SSR et/ou du relais, il vous suffit de sélectionner le mode FORCE dans l'onglet Moniteur de MaxPV! ou via une requête API. De même, vous pouvez empêcher le fonctionnement du SSR et/ou du relais en sélectionnant le mode STOP.
-Le mode par défaut des sorties SSR et relais secondaire à la mise sous tension peut être modifié dans le fichier EcoPV3.ino en lignes 118 et 120.
+## Interface web
+Page unique `http://maxpv.local/`, cinq onglets :
+* **État** : puissances, température, index, état du relais, RSSI, uptime (rafraîchi toutes les 5 s) ; modes SSR et relais (stop, force, auto) et bouton BOOST.
+* **Routeur** : les 16 paramètres EcoPV, BOOST (durée, puissance), limite de température, sauvegarde et rechargement des paramètres en EEPROM.
+* **Réseau** : MQTT (hôte, port, utilisateur, mot de passe en écriture seule, période, identifiant et préfixe des topics), IP fixe optionnelle (vide = DHCP), watchdogs.
+* **Étalonnage** : assistant d'étalonnage.
+* **Système** : versions et vérification de mise à jour, `/update`, sauvegarde et restauration de la configuration, redémarrages, RAZ des index, formatage de l'EEPROM, effacement de la configuration ESP (chaque action destructrice demande une confirmation), crédits.
 
-**ATTENTION** : il y a une limitation au fonctionnement jusqu'à la version 3.54 : Le mode AUTO du relais ne peut fonctionner que si le SSR est en mode AUTO. Si le SSR n'est pas en mode AUTO et si le relais est en mode AUTO, alors le relais sera desactivé en permanence.
-A partir de la version 3.55, le relais secondaire fonctionne en mode AUTO même si le SSR n'est pas en mode AUTO. Dans ce cas, le surplus PV correspond à la puissance exportée (injectée) vers le réseau, et non plus la puissance routée par le SSR.
+L'interface et `/update` n'ont pas d'authentification : à n'utiliser que sur un réseau de confiance. Le backend HTTP (`/status`, `/params`, `/config`, `/cmd`, `/backup`) est interne et non documenté : il peut changer sans préavis. Les envois `POST` exigent l'en-tête `X-MaxPV`.
+
+## Explication du mode de fonctionnement des sorties SSR et du relais secondaire
+Le mode de fonctionnement normal des sorties SSR et relais secondaire est le **mode AUTO**. Dans ce mode, le routeur dirige le surplus de production photovoltaïque vers la résistance du chauffe-eau et la charge secondaire de délestage éventuellement connectée au relais.
+Vous pouvez forcer la marche du SSR et/ou du relais (mode FORCE) ou l'empêcher (mode STOP), depuis l'onglet État ou depuis Home Assistant (selects « SSR » et « Relais »).
+Le mode par défaut des sorties à la mise sous tension peut être modifié dans le fichier EcoPV3.ino en lignes 118 et 120.
+
+Le relais secondaire fonctionne en mode AUTO même si le SSR n'est pas en mode AUTO : le surplus PV correspond alors à la puissance exportée vers le réseau, et non à la puissance routée par le SSR.
 
 ## Mode BOOST
-Le mode BOOST permet de déclencher le fonctionnement du SSR (résistance du chauffe-eau) pour une durée déterminée et avec une puissance déterminée par configuration dans le menu Administration. Le mode BOOST se déclenche à partir de la page principale. Si une nouvelle demande BOOST est effectuée pendant que le mode BOOST est déjà actif, la durée de fonctionnement est ré-initialisée à la valeur de configuration. Le mode BOOST peut être interrompu en cliquant sur le bouton correspondant. A l'arrêt du mode BOOST, la gestion du SSR passe en mode AUTO. Le pilotage de la résistance du chauffe-eau en mode BOOST est de type 'burst PWM' ou modulation de largeur d'impulsion, sur une période de 5 minutes. Ce n'est donc pas un pilotage proportionnel de type gradateur piloté en phase afin de limiter l'échauffement du SSR.
-Un déclenchement horaire programmé du mode BOOST est également configurable.
-**ATTENTION** : la modification du mode de fonctionnement du SSR est prioritaire sur le mode BOOST. Toute modification du mode de fonctionnement du SSR entraine l'arrêt automatique du mode BOOST si celui-ci était actif.
+Le mode BOOST déclenche le fonctionnement du SSR (résistance du chauffe-eau) pour une durée et avec une puissance réglables (entités BoostDuree et BoostRatio, onglet Routeur). Une nouvelle demande pendant un BOOST actif ré-initialise la durée. À l'arrêt du BOOST, le SSR repasse en mode AUTO. Le pilotage est de type 'burst PWM' sur une période de 5 minutes.
+**ATTENTION** : la modification du mode du SSR est prioritaire sur le BOOST et l'arrête.
+Pour un déclenchement programmé, utilisez le blueprint `boost_programme` (voir ci-dessous).
 
 ## Limitation en température
-Si une sonde 1-Wire est installée, la température est indiquée dans le moniteur. Une limite en température est configurable dans l'onglet Administration. Si la limitation est activée, alors le BOOST (manuel ou programmé) s'arrêtera automatiquement lorsque la température est atteinte, dans la limite de la durée de fonctionnement définie.
+Si une sonde 1-Wire est installée, la température est publiée. Si la limite est activée (switch `LimiteTemperature`) et que la température dépasse la température max, le BOOST s'arrête ; un BOOST est refusé tant que la température max est atteinte. Cette limite est appliquée par le Wemos : elle est inactive pendant son redémarrage.
 
-## Mode RelayPlus
-Le mode RelayPlus permet de fixer un temps mininum et un temps maximum journaliers de fonctionnement du relais secondaire. La configuration se fait dans le menu Administration. La fonctionnalité s'active à chaque passage à l'heure de référence définie. A cette heure de référence, le relais passe en mode AUTO et la fonctionnalité RelayPlus monitore le temps de fonctionnement du relais liée à l'utilisation du surplus PV. Lorsque la durée maximale de fonctionnement est atteinte, le relais secondaire passe en mode STOP jusqu'au jour suivant. Par contre, si RelayPlus constate que la durée minimale de fonctionnement ne sera pas atteinte dans la journée, le mode FORCE sera engagé pour garantir la durée minimale de fonctionnement avant la fin de la journée (= avant le passage suivant à l'heure de référence). Une fois que le temps de fonctionnement est complété, le mode relais passe à STOP jusqu'au jour suivant.
+## Home Assistant
+MaxPV! publie en MQTT avec autodiscovery (préfixe `homeassistant`). `<id>` = `maxpv` + identifiant de la puce ESP (visible dans l'onglet Réseau) ; base des topics : `maxpv/<id>`.
 
-Utilisation typique : le relais secondaire pilote une pompe de piscine. On peut alors fixer un temps minimum de fonctionnement par jour (par exemple 6h = 360 min) et un temps maximal (600 min). Idéalement, l'heure de référence est choisie pour correspondre à la fin de la production PV, par exemple 20 heures.
-**ATTENTION** : la modification du mode de fonctionnement du relais secondaire est prioritaire sur la fonctionnalité RelayPlus. Toute modification du mode de fonctionnement du relais entraine l'arrêt automatique de la fonctionnalité RelayPlus (si active) jusqu'au prochain passage à l'heure de référence.
+* `maxpv/<id>/status` : disponibilité (`online`/`offline`, retain, LWT).
+* `maxpv/<id>/state` : JSON retain de l'état (mesures, index, modes, états, diagnostics), publié toutes les `mqtt_period` secondes et après chaque commande de mode ou de BOOST.
+* `maxpv/<id>/params` : JSON retain des 16 paramètres EcoPV et des réglages ESP.
+* `maxpv/<id>/<clé>/set` : commandes (`triac_mode`, `relay_mode` : `stop`/`force`/`auto` ; `boost` : `ON`/`OFF` ; une clé par paramètre ; boutons `restartesp`, `resetecopv`, `savecfg`, `loadcfg`, `saveindx`, `indx0` avec le payload `PRESS`). Une valeur hors bornes est rejetée. Le formatage de l'EEPROM et l'effacement de la configuration ne sont jamais acceptés en MQTT.
 
+Entités (59) : capteurs de mesure, d'énergie et de diagnostic (certains désactivés par défaut), états `EtatRelais` et `ContactRouteur`, selects `SSR` et `Relais`, switchs `Boost` et `LimiteTemperature`, 20 numbers (16 paramètres EcoPV, `BoostDuree`, `BoostRatio`, `TempMax`, `PeriodeMQTT`), boutons `RedemarrerESP`, `RedemarrerRouteur`, `SauverParametres`, `RechargerParametres`, `SauverIndex`, `RAZIndex` (désactivé par défaut). Les 18 identifiants uniques historiques sont conservés : Home Assistant garde les entités et leur historique.
 
+Les paramètres modifiés depuis Home Assistant sont appliqués immédiatement au Nano mais ne sont gardés après une coupure qu'après avoir pressé **SauverParametres**.
 
-## API
-L'API permet d'interfacer MaxPV! avec des systèmes externes comme un système de domotique. L'API a été revue en profondeur comparativement à la version précédente de EcoPV. L'API est décrite dans la [Documentation API](Documentation%20API/API_MaxPV.pdf). Toutes les mutations (`/api/action`, `/api/set`) passent par `POST`, avec les paramètres dans le corps `application/x-www-form-urlencoded` (mêmes noms qu'avant) et l'en-tête `X-MaxPV` obligatoire (403 sinon, protection anti-CSRF). Un GET sur ces routes renvoie 405 et les requêtes invalides renvoient 400. Exemple : `curl -X POST -H 'X-MaxPV: 1' -d 'booston=' http://<ip>/api/action`. Le PDF n'est pas à jour sur ce point. Le mot de passe MQTT (`mqtt_pass`) n'est plus renvoyé par `/api/get?configmaxpv` ni par l'export `/DLconfig` ; à l'envoi, une valeur vide ou absente conserve le mot de passe actuel, et un `mqtt_user` vide l'efface. Après une restauration sur un ESP neuf, il faut ressaisir le mot de passe.
+Les index journaliers et l'historique ne sont plus calculés par le Wemos : utilisez des `utility_meter` sur les capteurs d'énergie, et le dashboard Énergie de Home Assistant.
 
-## WatchDog Wifi
-Un WatchDog Wifi est implémenté. L'activation est possible dans la page administration.
-En position OFF, la connexion Wifi et la connexion MQTT utilisent un mode de reconnexion automatique standard. Si le fonctionnement de MaxPV! est satisfaisant en position WatchDog Wifi OFF, conserver ce réglage.
-Si MaxPV! est régulièrement inacessible, soit par les pages Web, soit par MQTT, activer alors le WatchDog Wifi. 
-En position ON, MaxPV! interrogera régulièrement le serveur DNS1 que vous avez configuré. Celui-ci doit être accessible et répondre au ping. Dans la situation où MaxPV! ne parvient plus à accéder à ce serveur pendant 10 minutes, alors MaxPV! ré-initialisera la connexion Wifi pour tenter de résoudre le problème.
+### Blueprints
+Dans `blueprints/automation/maxpv/` : `boost_programme.yaml` (BOOST à heure fixe, jours au choix), `relayplus.yaml` (durées min et max du relais, avec un capteur `history_stats` décrit dans le blueprint), `relais_miroir.yaml` (recopie de l'état du relais sur un interrupteur distant). Import : Paramètres > Automatisations > Blueprints > Importer un blueprint, avec l'URL du fichier sur GitHub (https://github.com/gaetanars/MaxPV/blob/main/blueprints/automation/maxpv/boost_programme.yaml, idem pour les autres).
 
-## MQTT
-Un broker MQTT est configurable dans l'administration du système. L'authentification est optionnelle, laisser les champs vides si le broker ne nécessite pas d'authentification. Les données sont transmises sur les canaux tels que 'maxpv/pact', 'maxpv/pimpulsion', 'maxpv/prouted' etc... Le service MQTT supporte l'autodiscovery au format Home Assistant. Des informations de fonctionnement du Wemos sont également fournies sur le canal 'maxpv/SYS'.
+## Watchdogs
+* **WatchDog Wifi** (`watchdogwifi_active`) : le Wemos envoie un ping toutes les 30 s, vers le DNS1 si l'IP est fixe, sinon vers la passerelle. Si la cible reste injoignable pendant 10 minutes, la connexion Wifi est ré-initialisée.
+* **Watchdog MQTT** (`watchdogmqtt_active`) : si MQTT est configuré et déconnecté depuis plus de 10 minutes, le Wemos redémarre. Avec un broker mal saisi, il redémarre donc toutes les 10 minutes (l'interface reste joignable entre deux) : désactivez ce watchdog si besoin.
 
-## Relais distant en mode miroir
-Vous pouvez configurer un relais distant accessible sur votre réseau local via une requête HTTP GET. La configuration s'effectue dans l'onglet administration (adresse IP, port, chemins pour mettre le relais à ON et à OFF). Lorsqu'il est activé, l'état du relais physique de MaxPV! (relais secondaire de délestage situé sur le PCB) est recopié sur le relais distant. C'est un fonctionnement en miroir qui vous permet de bénéficier de la fonctionnalité "relais secondaire" à distance sans avoir à tirer de cable. Cela peut servir par exemple pour piloter une pompe de piscine dont l'alimentation est éloignée de MaxPV!. Note 1 : MaxPV! ne gère pas le retour d'état du relais distant, seules des commandes HTTP de pilotage sont émises. Note 2 : Veillez à ce que l'appel HTTP au relais distant ne génère pas en retour une réponse trop longue. Si la réponse contient quelques dizaines de caractères, ce qui est généralement le cas pour une API distante, il n'y a aucun souci. Si la réponse est une page WEB lourde de plusieurs kilo-octets, cela peut provoquer un dysfonctionnement du Wemos et son redémarrage. Note 3 : depuis la version 3.53, l'état du relais distant est mis à jour toutes les 20 secondes. Il peut donc s'écouler jusqu'à 20 secondes pour que l'état du relais physique soit recopié sur le relais distant.
+## Migration depuis la 3.x
+La 4.00 est une rupture. Retirés : historique et graphiques, index journaliers, BOOST programmé, RelayPlus (blueprints HA), relais distant (blueprint `relais_miroir`), FTP, NTP, `logMqtt`/`maxpv/SYS/*`, API `/api/*` et `/DLconfig` (le PDF n'existe plus), pages web multiples.
+* Configuration : l'IP fixe d'une config 3.x est conservée (si la passerelle, le masque ou le DNS1 sont invalides : DHCP). Les clés inconnues sont ignorées. L'activation de MQTT dépend désormais uniquement de la présence d'un hôte MQTT. Le port HTTP est fixe (80).
+* Les anciens topics `maxpv/vrms` … `maxpv/temperature`, `maxpv/state` et `maxpv/SYS/*` ne sont plus publiés mais leurs messages retain restent sur le broker. Pour les purger : `mosquitto_pub -r -n -t maxpv/vrms` (idem pour chaque topic, y compris `maxpv/SYS/<sous-topic>`).
+* Reflasher le firmware puis le filesystem (ordre dans « Mises à jour ») ou utiliser `MaxPV3_full.bin`.
 
-## Accès au système de fichiers par FTP
-Vous pouvez accéder au système de fichiers du Wemos par connexion FTP sur le port 21. L'identifiant est *maxpv*, mot de passe *maxpv*. ATTENTION : le serveur ne supporte qu'une seule connexion simultanée, veillez à configurer votre client FTP en conséquence. Depuis la version 3.5, l'accès FTP est disponible en option de compilation du firmware du Wemos.
-
-## Accès TELNET
-Un accès TELNET est disponible sur le port 23. Vous aurez alors accès à des informations de debug, en particulier l'échange de messsages de l'Arduino Nano vers le Wemos. L'accès TELNET est supprimé depuis la version 3.5.
 
 ## Allocation des pins de l'Arduino Nano
 Les pins d'entrée-sortie de l'Arduino Nano sont configurables dans le code EcoPV3 en fonction du développement de votre circuit électronique. Il y a toutefois certaines contraintes résumées dans le tableau ci-dessous.
@@ -141,11 +137,18 @@ Les pins d'entrée-sortie de l'Arduino Nano sont configurables dans le code EcoP
 La pin D9 est utilisé pour la sonde de température 1-Wire depuis la version 3.60.
 
 ## Licence
-* Le code de MaxPV! est distribué sous licence LGPL 2.1+.
-* Le firmware du Wemos embarque ElegantOTA (AGPL-3.0).
-* Les binaires de firmware distribués sont de ce fait soumis à l'AGPL-3.0.
+* Le code de MaxPV! est distribué sous licence LGPL 2.1+ ; il est issu de [Jetblack31/MaxPV](https://github.com/Jetblack31/MaxPV) (Bernard Legrand / Jetblack31), dont l'attribution est conservée.
+* Le firmware du Wemos embarque ElegantOTA (AGPL-3.0). Les binaires de firmware distribués sont de ce fait soumis à l'AGPL-3.0.
+* L'interface embarque [Pico CSS](https://picocss.com) 2.1.1 (MIT), copie exacte de `@picocss/pico@2.1.1/css/pico.min.css`. SHA-256 de `MaxPV3/data/pico.min.css` : `fbc9a63fc9fc9f72d12fd7fc9806e11fa9f77ae4f9cad146b27003a1119ba3db`.
 
 # Versions
+### **V 4.00** - 23/10/2026
+* Home Assistant via MQTT d'abord : autodiscovery de 59 entités, topics `maxpv/<id>`, état et paramètres en JSON, commandes validées par une fonction unique.
+* Nouvelle interface web à 5 onglets (Pico CSS, sans ressource externe).
+* Watchdog MQTT ; DHCP par défaut ; portail Wifi limité au Wifi.
+* Blueprints HA : BOOST programmé, RelayPlus, relais miroir.
+* Retraits : API, historique, index journaliers, FTP, NTP, relais distant. Voir « Migration depuis la 3.x ».
+* Versions : MaxPV! 4.00, site Web 4.00, EcoPV 3.60.
 ### **V 3.63** - 16/05/2026
 * Correction des sources script pour affichage des graphiques.
 * Versions : MaxPV! 3.61, site Web 3.63, EcoPV 3.60.

@@ -1,0 +1,180 @@
+[
+  {
+    "id": "F1",
+    "description": "Suppression des fonctions et libs retirées du firmware ESP (historique, index journaliers, BOOST programmé, RelayPlus, relais distant, FTP, NTP, ancienne API, logger et SYS MQTT, http_port, mqtt_active)",
+    "criteres_acceptation": [
+      "! grep -nE 'asyncHTTPrequest|SimpleFTPServer|NTPClient' platformio.ini",
+      "grep -q 'AsyncPing' platformio.ini && grep -q 'TickerScheduler' platformio.ini",
+      "! grep -nE 'energyIndexHistoric|relayPlus|relaisPlus|relaisDistant|remoteRelay|boostTimer|timeScheduler|MAXPV_FTP_SERVER|configTzTime|logMqtt|espTransmitInfos|INDEX_ROUTED_J|/api/|DLconfig|WARNING LOOP TIME' MaxPV3/MaxPV3.ino MaxPV3/maxpv_defines.h MaxPV3/maxpv_options.h",
+      ".venv/bin/pio run -e d1_mini"
+    ],
+    "tests": [
+      "test/acceptance_ha_mqtt_ui.sh"
+    ],
+    "passes": true
+  },
+  {
+    "id": "F2",
+    "description": "Config ESP réduite aux 16 clés de R2, bornée ; DHCP par défaut, IP fixe optionnelle validée ; MQTT actif si hôte non vide ; portail WiFiManager limité au Wifi",
+    "criteres_acceptation": [
+      "grep -q '\"watchdogmqtt_active\"' MaxPV3/MaxPV3.ino && grep -q '\"temp_limit_active\"' MaxPV3/MaxPV3.ino && grep -q '\"dns1\"' MaxPV3/MaxPV3.ino",
+      "! grep -nE '\"(http_port|mqtt_active|boost_timer_[a-z]+|remoterelay_[a-z]+|RelayPlus_[a-z]+)\"' MaxPV3/MaxPV3.ino",
+      ".venv/bin/pio test -e native -f test_config_size"
+    ],
+    "tests": [
+      "test/test_config_size/test_main.cpp"
+    ],
+    "passes": true
+  },
+  {
+    "id": "F3",
+    "description": "Watchdogs : WatchDog Wifi conservé (cible dns1 ou passerelle), watchdog MQTT 10 min activable",
+    "criteres_acceptation": [
+      "grep -q 'MQTT_WATCHDOG_TIMEOUT' MaxPV3/maxpv_defines.h && grep -q 'MQTT_WATCHDOG_TIMEOUT' MaxPV3/MaxPV3.ino",
+      "grep -q 'watchDogWifi' MaxPV3/MaxPV3.ino && grep -q 'gatewayIP' MaxPV3/MaxPV3.ino"
+    ],
+    "tests": [
+      "test/acceptance_ha_mqtt_ui.sh"
+    ],
+    "passes": true
+  },
+  {
+    "id": "F4",
+    "description": "Structure MQTT maxpv/<id> : status LWT online/offline, état JSON unique (buildStateJson), params JSON (buildParamsJson), commandes <clé>/set lues sur len",
+    "criteres_acceptation": [
+      "! grep -nE 'String\\(payload\\)' MaxPV3/MaxPV3.ino",
+      "! grep -nE '\"maxpv/(vrms|irms|pact|SYS)' MaxPV3/maxpv_defines.h MaxPV3/maxpv_mqtt.h MaxPV3/MaxPV3.ino",
+      "grep -q 'buildStateJson' MaxPV3/MaxPV3.ino && grep -q 'buildParamsJson' MaxPV3/MaxPV3.ino",
+      ".venv/bin/pio test -e native -f test_mqtt"
+    ],
+    "tests": [
+      "test/test_mqtt/test_main.cpp"
+    ],
+    "passes": true
+  },
+  {
+    "id": "F5",
+    "description": "Discovery HA par table PROGMEM dans maxpv_mqtt.h : 18 uniq_id existants conservés avec le même composant, nouvelles entités (binary_sensors, diagnostics, 20 number, switch LimiteTemperature, 6 buttons), payloads JSON valides, publication progressive",
+    "criteres_acceptation": [
+      "test -f MaxPV3/maxpv_mqtt.h",
+      ".venv/bin/pio test -e native -f test_mqtt"
+    ],
+    "tests": [
+      "test/test_mqtt/test_main.cpp"
+    ],
+    "passes": true
+  },
+  {
+    "id": "F6",
+    "description": "handleCommand partagé MQTT/HTTP : select exact, Boost avec limite de température, number EcoPV bornés, réglages ESP bornés, buttons PRESS, format/eraseconfigesp refusés hors HTTP",
+    "criteres_acceptation": [
+      "grep -q 'handleCommand' MaxPV3/maxpv_mqtt.h && test \"$(grep -c 'handleCommand' MaxPV3/MaxPV3.ino)\" -ge 2",
+      ".venv/bin/pio test -e native -f test_mqtt",
+      ".venv/bin/pio test -e native -f test_param_value"
+    ],
+    "tests": [
+      "test/test_mqtt/test_main.cpp",
+      "test/test_param_value/test_main.cpp"
+    ],
+    "passes": true
+  },
+  {
+    "id": "F7",
+    "description": "Backend HTTP interne : /status, /params, GET/POST /config, POST /cmd, /backup, fichiers statiques, /update ; X-MaxPV sur POST (403), 405, 404 text/plain sans redirection, mqtt_pass jamais renvoyé",
+    "criteres_acceptation": [
+      "for r in '\"/status\"' '\"/params\"' '\"/config\"' '\"/cmd\"' '\"/backup\"'; do grep -q \"$r\" MaxPV3/MaxPV3.ino || exit 1; done",
+      "grep -q 'checkMutationHeader' MaxPV3/MaxPV3.ino && grep -q 'ElegantOTA.begin' MaxPV3/MaxPV3.ino && grep -q '405' MaxPV3/MaxPV3.ino && grep -q '404' MaxPV3/MaxPV3.ino",
+      "! grep -n 'redirect' MaxPV3/MaxPV3.ino",
+      "grep -q 'image/x-icon' MaxPV3/MaxPV3.ino"
+    ],
+    "tests": [
+      "test/acceptance_ha_mqtt_ui.sh"
+    ],
+    "passes": true
+  },
+  {
+    "id": "F8",
+    "description": "UI page unique à 5 onglets (État, Routeur, Réseau, Étalonnage, Système), Pico CSS 2.1.1 embarqué, JS vanilla, aucune ressource externe, anciennes pages supprimées",
+    "criteres_acceptation": [
+      "for f in index.html app.js pico.min.css maxpv.css favicon.ico versionweb.txt; do test -f MaxPV3/data/$f || exit 1; done",
+      "for f in admin configuration credits graph main maj wizard; do test ! -e MaxPV3/data/$f.html || exit 1; done",
+      "test \"$(grep -cE 'id=\"tab-(etat|routeur|reseau|etalonnage|systeme)\"' MaxPV3/data/index.html)\" -eq 5",
+      "! grep -nE '(src|href)=\"(https?:)?//[^\"]*\\.(js|css)' MaxPV3/data/index.html",
+      "! grep -nE 'api/|cdn\\.|innerHTML *= *[a-zA-Z_]*\\.whatsnew' MaxPV3/data/app.js MaxPV3/data/index.html",
+      "grep -q 'X-MaxPV' MaxPV3/data/app.js && grep -q 'confirm(' MaxPV3/data/app.js && grep -q 'Pico' MaxPV3/data/pico.min.css",
+      ".venv/bin/pio run -t buildfs -e d1_mini"
+    ],
+    "tests": [
+      "test/acceptance_ha_mqtt_ui.sh"
+    ],
+    "passes": true
+  },
+  {
+    "id": "F9",
+    "description": "Versions 4.00 (MaxPV!, Web), latest à jour, check_versions OK",
+    "criteres_acceptation": [
+      "grep -qE '^#define MAXPV_VERSION +\"4.00\"' MaxPV3/maxpv_defines.h",
+      "test \"$(tr -d '[:space:]' < MaxPV3/data/versionweb.txt)\" = 4.00",
+      ".venv/bin/python -I scripts/check_versions.py && .venv/bin/python -I scripts/check_versions.py --tag v4.00",
+      "! .venv/bin/python -I scripts/check_versions.py --tag v3.61"
+    ],
+    "tests": [
+      "test/acceptance_ha_mqtt_ui.sh"
+    ],
+    "passes": true
+  },
+  {
+    "id": "F10",
+    "description": "CI : variante FTP retirée, buildfs et image fusionnée conservés, check_blueprints dans le job lint",
+    "criteres_acceptation": [
+      "actionlint",
+      "! grep -n 'FTP' .github/workflows/build.yml",
+      "grep -q 'buildfs' .github/workflows/build.yml && grep -q 'merge-bin' .github/workflows/build.yml",
+      "grep -q 'pyyaml==6.0.2' .github/workflows/build.yml && grep -q 'check_blueprints.py' .github/workflows/build.yml"
+    ],
+    "tests": [
+      "test/acceptance_ha_mqtt_ui.sh"
+    ],
+    "passes": true
+  },
+  {
+    "id": "F11",
+    "description": "Blueprints HA (boost programmé, RelayPlus, relais miroir) et script de vérification PyYAML",
+    "criteres_acceptation": [
+      "test -f blueprints/automation/maxpv/boost_programme.yaml && test -f blueprints/automation/maxpv/relayplus.yaml && test -f blueprints/automation/maxpv/relais_miroir.yaml",
+      ".venv/bin/python -I scripts/check_blueprints.py"
+    ],
+    "tests": [
+      "test/acceptance_ha_mqtt_ui.sh"
+    ],
+    "passes": true
+  },
+  {
+    "id": "F12",
+    "description": "Documentation et nettoyage : README réécrit (HA, UI, watchdogs, migration 3.x, purge topics, licences, V 4.00), Documentation API et fichiers obsolètes supprimés, CLAUDE.md projet, ROADMAP",
+    "criteres_acceptation": [
+      "test ! -e 'Documentation API' && test ! -e scripts/test_elegantota_v4.py && test ! -e images/mainpage.png",
+      "! grep -nE '^## (API|Relais distant|Accès au système de fichiers par FTP|Accès TELNET)' README.md && ! grep -n 'images/mainpage' README.md",
+      "grep -q 'MaxPV3_full.bin' README.md && grep -q 'mosquitto_pub' README.md && grep -q 'blueprints/automation/maxpv' README.md && grep -qi 'Pico' README.md && grep -qE 'Jetblack31|Bernard Legrand' README.md && grep -q 'V 4.00' README.md",
+      "! grep -nE 'API_MaxPV|/api/' CLAUDE.md && grep -q 'handleCommand' CLAUDE.md && grep -q 'pio run -t buildfs -e d1_mini && ' CLAUDE.md",
+      "grep -q 'ha-mqtt-ui' docs/ROADMAP.md"
+    ],
+    "tests": [
+      "test/acceptance_ha_mqtt_ui.sh"
+    ],
+    "passes": true
+  },
+  {
+    "id": "F13",
+    "description": "Contrat complet vert, EcoPV intact et CI GitHub Actions verte sur la PR draft",
+    "criteres_acceptation": [
+      ".venv/bin/python -I scripts/check_versions.py && .venv/bin/python -I scripts/check_blueprints.py && .venv/bin/pio test -e native",
+      "actionlint",
+      ".venv/bin/pio run -e d1_mini && .venv/bin/pio run -t buildfs -e d1_mini && .venv/bin/pio ci EcoPV3/EcoPV3.ino --project-conf ci/ecopv.ini -e nano",
+      "git diff --quiet origin/main -- EcoPV3/EcoPV3.ino",
+      "gh pr checks"
+    ],
+    "tests": [],
+    "passes": false
+  }
+]

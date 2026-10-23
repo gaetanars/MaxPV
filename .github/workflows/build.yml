@@ -32,6 +32,13 @@ jobs:
           tar xzf actionlint.tar.gz actionlint
       - name: Run actionlint
         run: ./actionlint -color
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.13'
+      - name: Check blueprints
+        run: |
+          python3 -m pip install pyyaml==6.0.2
+          python3 -I scripts/check_blueprints.py
 
   build:
     runs-on: ubuntu-latest
@@ -70,12 +77,6 @@ jobs:
           name: maxpv-firmware
           path: .pio/build/d1_mini/*.bin
           if-no-files-found: error
-
-      - name: Build ESP firmware (variante FTP)
-        env:
-          PLATFORMIO_BUILD_FLAGS: -DMAXPV_FTP_SERVER
-          PLATFORMIO_BUILD_DIR: ${{ runner.temp }}/build-ftp
-        run: pio run -e d1_mini
 
       - name: Tests natifs
         run: pio test -e native

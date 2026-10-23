@@ -1,0 +1,149 @@
+blueprint:
+  name: MaxPV! - RelayPlus (durées min et max du relais)
+  description: >
+    Fixe une durée minimale et maximale de fonctionnement journalière du relais
+    secondaire (par exemple une pompe de piscine). À minuit le relais passe en
+    auto ; il passe en stop quand la durée maximale est atteinte ; il passe en
+    force quand la durée minimale ne peut plus être atteinte avant l'heure de
+    fin, puis en stop une fois la durée minimale atteinte.
+
+
+    Prérequis : un capteur `history_stats` qui mesure la durée à l'état ON de
+    l'entité « État du relais » depuis minuit, en heures
+    (`type: time`, `start: "{{ today_at() }}"`, `end: "{{ now() }}"`).
+    Exemple :
+
+
+    ```yaml
+
+    sensor:
+      - platform: history_stats
+        name: Durée relais aujourd'hui
+        entity_id: binary_sensor.maxpv_etat_du_relais
+        state: "on"
+        type: time
+        start: "{{ today_at() }}"
+        end: "{{ now() }}"
+    ```
+  domain: automation
+  author: gaetanars
+  source_url: https://github.com/gaetanars/MaxPV/blob/main/blueprints/automation/maxpv/relayplus.yaml
+  input:
+    relais:
+      name: Select Relais
+      description: Entité select « Relais » de MaxPV! (stop, force, auto).
+      selector:
+        entity:
+          filter:
+            - domain: select
+    etat_relais:
+      name: État du relais
+      description: Entité binary_sensor « État du relais » de MaxPV!.
+      selector:
+        entity:
+          filter:
+            - domain: binary_sensor
+    duree_jour:
+      name: Durée ON du jour (history_stats)
+      description: Capteur history_stats en heures, voir la description du blueprint.
+      selector:
+        entity:
+          filter:
+            - domain: sensor
+    duree_min:
+      name: Durée minimale (minutes)
+      default: 360
+      selector:
+        number:
+          min: 0
+          max: 1440
+          unit_of_measurement: min
+    duree_max:
+      name: Durée maximale (minutes)
+      default: 600
+      selector:
+        number:
+          min: 0
+          max: 1440
+          unit_of_measurement: min
+    heure_fin:
+      name: Heure de fin
+      description: Heure avant laquelle la durée minimale doit être atteinte.
+      default: "20:00:00"
+      selector:
+        time:
+mode: queued
+max: 5
+variables:
+  relais: !input relais
+  etat_relais: !input etat_relais
+  duree_jour: !input duree_jour
+  duree_min: !input duree_min
+  duree_max: !input duree_max
+  heure_fin: !input heure_fin
+  fait_min: "{{ (states(duree_jour) | float(0)) * 60 }}"
+triggers:
+  - trigger: time
+    at: "00:00:00"
+    id: debut
+  - trigger: state
+    entity_id: !input duree_jour
+    id: suivi
+  - trigger: state
+    entity_id: !input etat_relais
+    id: suivi
+  - trigger: time_pattern
+    minutes: "/1"
+    id: suivi
+actions:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: debut
+        sequence:
+          - action: select.select_option
+            target:
+              entity_id: !input relais
+            data:
+              option: auto
+      - conditions:
+          - condition: template
+            value_template: "{{ fait_min >= duree_max | float(0) }}"
+          - condition: not
+            conditions:
+              - condition: state
+                entity_id: !input relais
+                state: stop
+        sequence:
+          - action: select.select_option
+            target:
+              entity_id: !input relais
+            data:
+              option: stop
+      - conditions:
+          - condition: template
+            value_template: "{{ fait_min >= duree_min | float(0) }}"
+          - condition: state
+            entity_id: !input relais
+            state: force
+        sequence:
+          - action: select.select_option
+            target:
+              entity_id: !input relais
+            data:
+              option: stop
+      - conditions:
+          - condition: state
+            entity_id: !input relais
+            state: auto
+          - condition: template
+            value_template: >
+              {% set fin = today_at(heure_fin) %}
+              {% set reste = (fin - now()).total_seconds() / 60 %}
+              {{ reste > 0 and reste <= (duree_min | float(0)) - fait_min }}
+        sequence:
+          - action: select.select_option
+            target:
+              entity_id: !input relais
+            data:
+              option: force

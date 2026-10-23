@@ -1,0 +1,48 @@
+blueprint:
+  name: MaxPV! - BOOST programmé
+  description: >
+    Démarre le BOOST du routeur MaxPV! à une heure donnée, les jours choisis.
+    La durée et la puissance du BOOST se règlent dans les entités MaxPV!
+    (BoostDuree, BoostRatio) ; la limite de température reste gérée par le
+    firmware.
+  domain: automation
+  author: gaetanars
+  source_url: https://github.com/gaetanars/MaxPV/blob/main/blueprints/automation/maxpv/boost_programme.yaml
+  input:
+    heure:
+      name: Heure de déclenchement
+      selector:
+        time:
+    boost:
+      name: Switch Boost
+      description: Entité switch « Boost » de MaxPV!.
+      selector:
+        entity:
+          filter:
+            - domain: switch
+    jours:
+      name: Jours (optionnel)
+      description: Tous les jours si la liste est inchangée.
+      default: [mon, tue, wed, thu, fri, sat, sun]
+      selector:
+        select:
+          multiple: true
+          options:
+            - { label: Lundi, value: mon }
+            - { label: Mardi, value: tue }
+            - { label: Mercredi, value: wed }
+            - { label: Jeudi, value: thu }
+            - { label: Vendredi, value: fri }
+            - { label: Samedi, value: sat }
+            - { label: Dimanche, value: sun }
+mode: single
+triggers:
+  - trigger: time
+    at: !input heure
+conditions:
+  - condition: time
+    weekday: !input jours
+actions:
+  - action: switch.turn_on
+    target:
+      entity_id: !input boost

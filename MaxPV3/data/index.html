@@ -1,360 +1,214 @@
 <!doctype html>
 <html lang="fr">
-
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=0.8">
-  <meta name="description" content="">
-  <meta name="author" content="Bernard Legrand">
-  <title>MaxPv! Moniteur</title>
-
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx" crossorigin="anonymous">
-
-  <link href="maxpv.css" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>MaxPV!</title>
+  <link rel="icon" href="favicon.ico">
+  <link rel="stylesheet" href="pico.min.css">
+  <link rel="stylesheet" href="maxpv.css">
 </head>
-
 <body>
-
-  <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="/">MaxPV!</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"
-        aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarCollapse">
-        <ul class="navbar-nav me-auto mb-2 mb-md-0">
-          <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="index.html">Moniteur</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="graph.html">Graphiques</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="wizard.html">Assistant de configuration</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="configuration.html">Paramétrage avancé</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="admin.html">Administration</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="maj.html">Update</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="credits.html">Credits</a>
-          </li>
-        </ul>
-      </div>
-    </div>
+<header class="container">
+  <hgroup>
+    <h1>MaxPV!</h1>
+    <p>Routeur solaire EcoPV : <span id="h-nano">Nano : ?</span> | <span id="h-mqtt">MQTT : ?</span> | <span id="h-ver">version ?</span></p>
+  </hgroup>
+  <nav aria-label="onglets">
+    <ul>
+      <li><a href="#etat">État</a></li>
+      <li><a href="#routeur">Routeur</a></li>
+      <li><a href="#reseau">Réseau</a></li>
+      <li><a href="#etalonnage">Étalonnage</a></li>
+      <li><a href="#systeme">Système</a></li>
+    </ul>
   </nav>
+</header>
 
-  <main class="container-fluid">
-    <div class="bg-light p-5 rounded">
-      <h1>Moniteur</h1>
-      <table class="table text-center align-middle">
-        <tbody>
-          <tr>
-            <td scope="col">
-                <button class="btn btn-warning col-12" id="booststate" type="submit" disabled onclick="this.blur()">Boost ---</button>
-            </td>
-            <td scope="col">
-                <button class="btn btn-warning col-12" id="ssrstate" type="submit" disabled onclick="this.blur()">SSR ---</button>
-            </td>
-            <td scope="col">
-                <button class="btn btn-warning col-12" id="relaystate" type="submit" disabled onclick="this.blur()">Relais ---</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>    
-<p class="lead">
-      </p>
-      <table class="table table-hover">
-        <thead>
-          <tr class="table-primary">
-            <th scope="col">Paramètres</th>
-            <th scope="col" class="text-center">Valeur</th>
-            <th scope="col" class="text-center">Unité</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <th scope="row">Tension</th>
-            <td class="text-center"><span id="vrms">-----</span></td>
-            <td class="text-center">V</td>
-          </tr>
-          <tr>
-            <th scope="row">Courant</th>
-            <td class="text-center"><span id="irms">-----</span></td>
-            <td class="text-center">A</td>
-          </tr>
-          <tr>
-            <th scope="row">Facteur de puiss.</th>
-            <td class="text-center"><span id="cosphi">-----</span></td>
-            <td class="text-center"></td>
-          </tr>
-          <tr>
-            <th scope="row">Puiss. apparente</th>
-            <td class="text-center"><span id="papp">-----</span></td>
-            <td class="text-center">VA</td>
-          </tr>
-          <tr>
-            <th scope="row">Puiss. active</th>
-            <td class="text-center"><span id="pact">-----</span></td>
-            <td class="text-center">W</td>
-          </tr>
-          <tr>
-            <th scope="row">Puiss. routée</th>
-            <td class="text-center"><span id="prouted">-----</span></td>
-            <td class="text-center">W</td>
-          </tr>
-          <tr>
-            <th scope="row">Puiss. produite</th>
-            <td class="text-center"><span id="pimpulsion">-----</span></td>
-            <td class="text-center">W</td>
-          </tr>
-          <tr>
-            <th scope="row">Température ECS</th>
-            <td class="text-center"><span id="temperature">-----</span></td>
-            <td class="text-center">°C</td>
-          </tr>
-        </tbody>
+<main class="container">
+  <p id="msg" role="status"></p>
 
-        <thead>
-          <tr class="table-primary">
-            <th scope="col">Index journaliers</th>
-            <th scope="col" class="text-center"></th>
-            <th scope="col" class="text-center"></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <th scope="row">Energie importée</th>
-            <td class="text-center"><span id="indeximportJ">-----</span></td>
-            <td class="text-center">kWh</td>
-          </tr>
-          <tr>
-            <th scope="row">Energie exportée</th>
-            <td class="text-center"><span id="indexexportJ">-----</span></td>
-            <td class="text-center">kWh</td>
-          </tr>
-          <tr>
-            <th scope="row">Energie routée</th>
-            <td class="text-center"><span id="indexroutedJ">-----</span></td>
-            <td class="text-center">kWh</td>
-          </tr>
-          <tr>
-            <th scope="row">Energie produite</th>
-            <td class="text-center"><span id="indeximpulsionJ">-----</span></td>
-            <td class="text-center">kWh</td>
-          </tr>
-          <tr>
-            <th scope="row">Durée relais On</th>
-            <td class="text-center"><span id="indexrelayJ">-----</span></td>
-            <td class="text-center">min.</td>
-          </tr>
-        </tbody>
-
-        <thead>
-          <tr class="table-primary">
-            <th scope="col">Index totaux</th>
-            <th scope="col" class="text-center"></th>
-            <th scope="col" class="text-center"></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <th scope="row">Energie importée</th>
-            <td class="text-center"><span id="indeximport">-----</span></td>
-            <td class="text-center">kWh</td>
-          </tr>
-          <tr>
-            <th scope="row">Energie exportée</th>
-            <td class="text-center"><span id="indexexport">-----</span></td>
-            <td class="text-center">kWh</td>
-          </tr>
-          <tr>
-            <th scope="row">Energie routée</th>
-            <td class="text-center"><span id="indexrouted">-----</span></td>
-            <td class="text-center">kWh</td>
-          </tr>
-          <tr>
-            <th scope="row">Energie produite</th>
-            <td class="text-center"><span id="indeximpulsion">-----</span></td>
-            <td class="text-center">kWh</td>
-          </tr>
-          <tr>
-            <th scope="row">Durée relais On</th>
-            <td class="text-center"><span id="indexrelay">-----</span></td>
-            <td class="text-center">min.</td>
-          </tr>
-        </tbody>
-
-        <thead>
-          <tr class="table-primary">
-            <th scope="col">Autres informations</th>
-            <th scope="col" class="text-center"></th>
-            <th scope="col" class="text-center"></th>
-          </tr>
-        </thead>
-
-        <tbody>
-          <tr>
-            <th scope="row">Heure</th>
-            <td class="text-center"><span id="time">-----</span></td>
-            <td class="text-center">H:M:S</td>
-          </tr>
-          <tr>
-            <th scope="row">Up time</th>
-            <td class="text-center"><span id="ontime">-----</span></td>
-            <td class="text-center">D:H:M:S</td>
-          </tr>
-          <tr>
-            <th scope="row">Point milieu</th>
-            <td class="text-center"><span id="vbias">-----</span></td>
-            <td class="text-center">V</td>
-          </tr>
-          <tr>
-            <th scope="row">Trig minimal SSR</th>
-            <td class="text-center"><span id="dmin">-----</span></td>
-            <td class="text-center">ms</td>
-          </tr>
-          <tr>
-            <th scope="row">Trig moyen SSR</th>
-            <td class="text-center"><span id="davg">-----</span></td>
-            <td class="text-center">ms</td>
-          </tr>
-          <tr>
-            <th scope="row">Trig maximal SSR</th>
-            <td class="text-center"><span id="dmax">-----</span></td>
-            <td class="text-center">ms</td>
-          </tr>
-          <tr>
-            <th scope="row">Status byte</th>
-            <td class="text-center"><span id="status">-----</span></td>
-            <td class="text-center"></td>
-          </tr>
-          <tr>
-            <th scope="row">Echantillonage</th>
-            <td class="text-center"><span id="sample">-----</span></td>
-            <td class="text-center">Sa/s</td>
-          </tr>
-        </tbody>
-      </table>
-      <br>
+  <section id="tab-etat">
+    <h2>État</h2>
+    <div class="grid">
+      <article>
+        <header>Puissances</header>
+        <p>Tension : <strong data-k="vrms">-</strong> V | Courant : <strong data-k="irms">-</strong> A</p>
+        <p>Active : <strong data-k="pact">-</strong> W | Apparente : <strong data-k="papp">-</strong> VA</p>
+        <p>Routée : <strong data-k="prouted">-</strong> W | Import : <strong data-k="pimp">-</strong> W | Export : <strong data-k="pexp">-</strong> W</p>
+        <p>Impulsions : <strong data-k="pimpulsion">-</strong> W | cos phi : <strong data-k="cosphi">-</strong></p>
+      </article>
+      <article>
+        <header>Chauffe-eau et relais</header>
+        <p>Température : <strong data-k="temp">-</strong> °C</p>
+        <p>Relais : <strong data-k="relay_on">-</strong></p>
+        <p>BOOST : <strong data-k="boost">-</strong></p>
+        <p>Wifi : <strong data-k="rssi">-</strong> dBm | IP : <strong data-k="ip">-</strong></p>
+        <p>Démarré depuis : <strong data-k="uptime">-</strong></p>
+      </article>
     </div>
+    <article>
+      <header>Index</header>
+      <p>Routé : <strong data-k="idx_routed">-</strong> Wh | Import : <strong data-k="idx_import">-</strong> Wh | Export : <strong data-k="idx_export">-</strong> Wh</p>
+      <p>Impulsions : <strong data-k="idx_impulsion">-</strong> Wh | Relais : <strong data-k="idx_relay">-</strong> min</p>
+    </article>
+    <article>
+      <header>Pilotage</header>
+      <div class="grid">
+        <label>SSR
+          <select id="sel-triac_mode"><option value="stop">stop</option><option value="force">force</option><option value="auto">auto</option></select>
+        </label>
+        <label>Relais
+          <select id="sel-relay_mode"><option value="stop">stop</option><option value="force">force</option><option value="auto">auto</option></select>
+        </label>
+      </div>
+      <button id="btn-boost" type="button">BOOST</button>
+    </article>
+  </section>
 
-  </main>
+  <section id="tab-routeur" hidden>
+    <h2>Routeur</h2>
+    <p>Paramètres enregistrés dans l'Arduino Nano. Aide : <a href="https://github.com/Jetblack31/EcoPV#calibrage-et-param%C3%A9trage" target="_blank" rel="noopener">calibrage et paramétrage EcoPV</a>.</p>
+    <p><strong>Pensez à sauver les paramètres en EEPROM après modification.</strong></p>
+    <div id="params-ecopv"></div>
+    <h3>BOOST et limite de température</h3>
+    <div id="params-esp"></div>
+    <label><input type="checkbox" id="chk-temp_limit" role="switch"> Limite de température (arrête le BOOST au-delà de la température max)</label>
+    <h3>EEPROM du Nano</h3>
+    <div class="actions">
+      <button type="button" data-cmd="savecfg">Sauver les paramètres</button>
+      <button type="button" class="secondary" data-cmd="loadcfg">Recharger les paramètres</button>
+    </div>
+  </section>
 
-  <script>
+  <section id="tab-reseau" hidden>
+    <h2>Réseau</h2>
+    <form id="form-net">
+      <fieldset>
+        <legend>MQTT (vide = désactivé)</legend>
+        <label>Hôte (IP ou nom DNS) <input name="mqtt_ip" maxlength="64"></label>
+        <div class="grid">
+          <label>Port <input name="mqtt_port" type="number" min="1" max="65535"></label>
+          <label>Période de publication (s) <input name="mqtt_period" type="number" min="1" max="3600"></label>
+        </div>
+        <div class="grid">
+          <label>Utilisateur (vide = sans authentification) <input name="mqtt_user" maxlength="39" autocomplete="off"></label>
+          <label>Mot de passe <input name="mqtt_pass" type="password" maxlength="39" placeholder="inchangé" autocomplete="new-password"></label>
+        </div>
+        <p>Identifiant : <code id="mqtt-id">-</code> | Préfixe des topics : <code id="mqtt-prefix">-</code></p>
+      </fieldset>
+      <fieldset>
+        <legend>IP fixe (IP vide = DHCP)</legend>
+        <div class="grid">
+          <label>IP <input name="ip" maxlength="15"></label>
+          <label>Passerelle <input name="gateway" maxlength="15"></label>
+          <label>Masque <input name="subnet" maxlength="15"></label>
+        </div>
+        <div class="grid">
+          <label>DNS 1 <input name="dns1" maxlength="15"></label>
+          <label>DNS 2 <input name="dns2" maxlength="15"></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Watchdogs</legend>
+        <label><input type="checkbox" name="watchdogwifi_active" role="switch"> Watchdog Wifi (ping, redémarre si le réseau est perdu)</label>
+        <label><input type="checkbox" name="watchdogmqtt_active" role="switch"> Watchdog MQTT (redémarre après 10 min sans broker)</label>
+      </fieldset>
+      <button type="submit">Enregistrer et redémarrer</button>
+    </form>
+  </section>
 
-    setInterval(function () {
-      var xhttp1 = new XMLHttpRequest();
-      var xhttp2 = new XMLHttpRequest();
-      var xhttp3 = new XMLHttpRequest();
-      var xhttp4 = new XMLHttpRequest();
-      var xhttp5 = new XMLHttpRequest();
+  <section id="tab-etalonnage" hidden>
+    <h2>Étalonnage</h2>
+    <p>Suivez les étapes une à une. Vous pouvez interrompre et recommencer en rechargeant la page. <strong>À la fin, sauvez la configuration à l'étape 10.</strong></p>
 
-      xhttp1.onreadystatechange = function () {
-        if (this.readyState == 4 && this.status == 200) {
-          var config = this.responseText.split(",");
-          document.getElementById("vrms").innerHTML = config[0];
-          document.getElementById("irms").innerHTML = config[1];
-          document.getElementById("pact").innerHTML = config[2];
-          document.getElementById("papp").innerHTML = config[3];
-          document.getElementById("prouted").innerHTML = config[4];
-          document.getElementById("cosphi").innerHTML = config[7];
-          document.getElementById("indexrouted").innerHTML = config[8];
-          document.getElementById("indeximport").innerHTML = config[9];
-          document.getElementById("indexexport").innerHTML = config[10];
-          document.getElementById("indeximpulsion").innerHTML = config[11];
-          document.getElementById("indexrelay").innerHTML = config[22];
-          document.getElementById("pimpulsion").innerHTML = config[12];
-          document.getElementById("dmin").innerHTML = config[15];
-          document.getElementById("davg").innerHTML = config[16];
-          document.getElementById("dmax").innerHTML = config[17];
-          document.getElementById("vbias").innerHTML = config[18];
-          document.getElementById("status").innerHTML = config[19];
-          document.getElementById("ontime").innerHTML = config[20];
-          document.getElementById("sample").innerHTML = config[21];
-          document.getElementById("indexroutedJ").innerHTML = (parseFloat( config[8] ) - parseFloat( config[24]) ).toFixed(3).toString();
-          document.getElementById("indeximportJ").innerHTML = (parseFloat( config[9] ) - parseFloat( config[25]) ).toFixed(3).toString();
-          document.getElementById("indexexportJ").innerHTML = (parseFloat( config[10] ) - parseFloat( config[26]) ).toFixed(3).toString();
-          document.getElementById("indeximpulsionJ").innerHTML = (parseFloat( config[11] ) - parseFloat( config[27]) ).toFixed(3).toString();
-          document.getElementById("indexrelayJ").innerHTML = (parseInt( config[22], 10 ) - parseInt( config[28], 10 ) ).toString();
-          document.getElementById("temperature").innerHTML = config[23];
-        }
-      };
-      xhttp1.open("GET", "api/get?alldata", true);
-      xhttp1.send();
+    <article class="step" id="step1">
+      <h4>Étape 1</h4>
+      <p>Commencer la configuration : remise à zéro des index, redémarrage du routeur et V_CALIB à 0,800.</p>
+      <button type="button" id="w-start">Commencer</button>
+    </article>
+    <article class="step" id="step2">
+      <h4>Étape 2</h4>
+      <p>Puissance de l'installation PV (Wc).</p>
+      <div class="grid"><input id="w-p_installpv" type="number" placeholder="Wc"><button type="button" id="w-send-installpv">Envoyer</button></div>
+    </article>
+    <article class="step" id="step3">
+      <h4>Étape 3</h4>
+      <p>Puissance du chauffe-eau (W). Les gains de régulation en sont déduits.</p>
+      <div class="grid"><input id="w-p_resistance" type="number" placeholder="W"><button type="button" id="w-send-resistance">Envoyer</button></div>
+    </article>
+    <article class="step" id="step4">
+      <h4>Étape 4</h4>
+      <p>Ajuster le potentiomètre de la carte pour afficher la tension secteur correcte : <strong id="w-vrms">-----</strong> V</p>
+    </article>
+    <article class="step" id="step5">
+      <h4>Étape 5</h4>
+      <p>Clipser la pince autour du fil de phase en sortie du disjoncteur principal. Allumer des appareils (2000 à 3000 W), puis indiquer la puissance apparente lue sur le compteur.</p>
+      <div class="grid"><input id="w-papp" type="number" value="2500" placeholder="VA"><button type="button" id="w-send-pcalib">Calculer P_CALIB</button></div>
+    </article>
+    <article class="step" id="step6">
+      <h4>Étape 6</h4>
+      <p>Dé-clipser la pince et la refermer à vide, loin de tout câble, puis corriger l'offset.</p>
+      <button type="button" id="w-offset">Correction offset</button>
+    </article>
+    <article class="step" id="step7">
+      <h4>Étape 7</h4>
+      <p>Pince autour du fil de phase d'une charge résistive pure (1500 à 3000 W) allumée. Déplacer le curseur pas à pas pour obtenir un cos phi maximal (proche de 1), en attendant 2 secondes à chaque changement. Puis éteindre l'appareil.</p>
+      <p>cos phi : <strong id="w-cosphi">-----</strong> (max <span id="w-cosmax">-----</span>)</p>
+      <progress id="w-cosbar" min="0.98" max="1.02" value="0.98"></progress>
+      <input type="range" id="w-phase_calib" min="0" max="24" step="1" value="0">
+    </article>
+    <article class="step" id="step8">
+      <h4>Étape 8</h4>
+      <p>Si une charge secondaire est branchée sur le relais tout ou rien, indiquer sa puissance (W), sinon passer.</p>
+      <div class="grid"><input id="w-psec" type="number" value="1000" placeholder="W"><button type="button" id="w-send-relay2">Envoyer</button></div>
+    </article>
+    <article class="step" id="step9">
+      <h4>Étape 9</h4>
+      <p>Si un compteur à impulsions est employé, indiquer le poids d'une impulsion (Wh), sinon passer.</p>
+      <div class="grid"><input id="w-cnt_calib" type="number" step="0.0001" placeholder="Wh / imp"><button type="button" id="w-send-cnt">Envoyer</button></div>
+    </article>
+    <article class="step" id="step10">
+      <h4>Étape 10</h4>
+      <p><strong>Sauver les paramètres dans l'EEPROM</strong>, puis installer définitivement le routeur. Si le fonctionnement est incorrect, retourner la pince.</p>
+      <button type="button" id="w-save">Sauver le paramétrage</button>
+    </article>
+  </section>
 
-      xhttp2.onreadystatechange = function () {
-        if (this.readyState == 4 && this.status == 200) {
-          var result = this.responseText;
-          result = "SSR " + result;
-          document.getElementById("ssrstate").innerHTML = result;
-        }
-      };
-      xhttp2.open("GET", "api/get?ssrstate", true);
-      xhttp2.send();
-
-      xhttp3.onreadystatechange = function () {
-        if (this.readyState == 4 && this.status == 200) {
-          var result = this.responseText;
-          result = "Relais " + result;
-          document.getElementById("relaystate").innerHTML = result;
-        }
-      };
-      xhttp3.open("GET", "api/get?relaystate", true);
-      xhttp3.send();
-
-      xhttp4.onreadystatechange = function () {
-        if (this.readyState == 4 && this.status == 200) {
-          var result = this.responseText;
-          document.getElementById("time").innerHTML = result;
-        }
-      };
-      xhttp4.open("GET", "api/get?time", true);
-      xhttp4.send();
-
-      xhttp5.onreadystatechange = function () {
-        if (this.readyState == 4 && this.status == 200) {
-          var result = this.responseText;
-          result = "Boost " + result;
-          document.getElementById("booststate").innerHTML = result;
-        }
-      };
-      xhttp5.open("GET", "api/get?booststate", true);
-      xhttp5.send();
-
-    }, 1000);
-
-    function postApi(url, params, onDone) {
-      var xhttp = new XMLHttpRequest();
-      xhttp.onreadystatechange = function () {
-        if (this.readyState == 4 && onDone) onDone(this.status == 200);
-      };
-      xhttp.open("POST", url, true);
-      xhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-      xhttp.setRequestHeader("X-MaxPV", "1");
-      xhttp.send(new URLSearchParams(params).toString());
-    }
-
-    function sendMode(name, ele) {
-      postApi("api/set", [[name, ""], ["value", ele.id.replace("relay", "").replace("ssr", "")]]);
-      ele.blur();
-    }
-
-    function sendAction(action, ele, onDone) {
-      postApi("api/action", [[action, ""]], onDone);
-      if (ele) ele.blur();
-    }
-
-  </script>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
-
+  <section id="tab-systeme" hidden>
+    <h2>Système</h2>
+    <article>
+      <header>Versions</header>
+      <p>MaxPV! <strong id="v-maxpv">-</strong> | Site Web <strong id="v-web">-</strong> | EcoPV <strong id="v-ecopv">-</strong></p>
+      <button type="button" id="btn-latest">Rechercher une mise à jour</button>
+      <pre id="latest-msg"></pre>
+      <p><a href="/update">Mise à jour du firmware ou du filesystem (OTA)</a></p>
+    </article>
+    <article>
+      <header>Sauvegarde</header>
+      <p><a href="/backup" download>Télécharger la sauvegarde de la configuration</a> (sans le mot de passe MQTT)</p>
+      <label>Restaurer une sauvegarde <input type="file" id="file-restore" accept="application/json,.json"></label>
+    </article>
+    <article>
+      <header>Actions</header>
+      <div class="actions">
+        <button type="button" class="secondary" data-cmd="restartesp" data-confirm="Redémarrer l'ESP (MaxPV!) ?">Redémarrer l'ESP</button>
+        <button type="button" class="secondary" data-cmd="resetecopv" data-confirm="Redémarrer le routeur (Nano) ?">Redémarrer le Nano</button>
+        <button type="button" class="secondary" data-cmd="saveindx">Sauver les index en EEPROM</button>
+        <button type="button" class="contrast" data-cmd="indx0" data-confirm="Remettre tous les index à zéro ?">Remettre les index à zéro</button>
+        <button type="button" class="contrast" data-cmd="format" data-confirm="Formater l'EEPROM du Nano ? Tous les paramètres seront perdus.">Formater l'EEPROM</button>
+        <button type="button" class="contrast" data-cmd="eraseconfigesp" data-confirm="Effacer la configuration de l'ESP (réseau, MQTT, réglages) ?">Effacer la config ESP</button>
+      </div>
+    </article>
+    <article>
+      <header>Crédits et licences</header>
+      <p>MaxPV! par Bernard Legrand (Jetblack31), fork maintenu sur <a href="https://github.com/gaetanars/MaxPV" target="_blank" rel="noopener">github.com/gaetanars/MaxPV</a>. EcoPV : <a href="https://github.com/Jetblack31/EcoPV" target="_blank" rel="noopener">github.com/Jetblack31/EcoPV</a> (aide et calibrage).</p>
+      <p>Copyright (C) 2019 Bernard Legrand et Mickaël Lefebvre ; (C) 2023 Bernard Legrand. Programme libre sous licence GNU LGPL version 2.1 ou ultérieure. Merci à gaetanars, Grubuntu et Djeje pour leurs contributions.</p>
+      <p>Bibliothèques : ESPAsyncWiFiManager, ESPAsyncWebServer, AsyncMQTT_Generic, ElegantOTA (AGPL-3.0), ArduinoJson, TickerScheduler, AsyncPing. Interface : <a href="https://picocss.com" target="_blank" rel="noopener">Pico CSS</a> 2.1.1 (licence MIT).</p>
+    </article>
+  </section>
+</main>
+<script src="app.js"></script>
 </body>
-
 </html>
