@@ -4,7 +4,7 @@ Audit du 2026-10-22 sur `main` @ 5e73771 (MaxPV! 3.61, EcoPV 3.60, Web 3.63).
 Statut : **confirmé** = démontré par la lecture du code ou un run CI ; **à vérifier** = plausible, à reproduire (banc ou test natif) avant correction.
 Effort : S < 1 h, M = une demi-journée, L > 1 jour.
 
-Mise à jour du 2026-10-23 sur `main` @ 1c8349a : voir « Avancement » ci-dessous. Les items traités sont marqués ✅ (le texte d'origine est conservé comme historique).
+Mise à jour du 2026-10-23 sur `main` @ 7f44c0c (MaxPV! 4.00) : voir « Avancement » ci-dessous. Les items traités sont marqués ✅ (le texte d'origine est conservé comme historique).
 
 Légende des priorités :
 - **P0** : cassé aujourd'hui, ou risque de perte de config / boucle de reboot.
@@ -28,8 +28,9 @@ Légende des priorités :
 | P1-2, P1-4 | ✅ toutes les mutations (`/api/action`, `/api/set`) en `POST` avec en-tête `X-MaxPV` obligatoire (403 sinon), GET → 405, erreurs → 400 ; `param` reformaté depuis l'entier, `value` validée par `isNumericParamValue` (test natif) ; reboot chaîné au succès de l'effacement dans `admin.html`. Test sur appareil à faire | `1c8349a` (spec `mutations-post`, PR #6 mergée, CI verte) |
 | P1-9, P3-4 | ✅ réglés en marge : reboot chaîné au succès de la sauvegarde (`admin.html:62-67`) ; `whatsnew` affiché via `textContent` (`main.html:175`) | PR #5, PR #3 |
 | P1-3, P2-8 | ✅ `mqtt_pass` retiré de `/api/get?configmaxpv` et `/DLconfig` (`sendConfig`), vide/absent = conservé, `mqtt_user` vide = effacé ; test sur appareil à faire | `c1ea113` (PR #8, branche `fix/mqtt-pass-masque`) |
-| P1-5, P2-3, P2-4, P2-5 (côté ESP), P2-6 et P2-7 (côté UI), P2-9, P3-2, P3-3, P3-5, P3-6, P3-8, P3-9 | ✅ traités ou rendus obsolètes (MaxPV! 4.00 : lecture du payload sur `len`, historique, index journaliers, planificateur, NTP et ancienne API supprimés, topics `maxpv/<id>`, `NTPClient` retiré) | spec `ha-mqtt-ui` (branche `agent/ha-mqtt-ui`, validation CI et matériel à faire) |
+| P1-5, P2-3, P2-4, P2-5 (côté ESP), P2-6 et P2-7 (côté UI), P2-9, P3-2, P3-3, P3-5, P3-6, P3-8, P3-9 | ✅ traités ou rendus obsolètes (MaxPV! 4.00 : lecture du payload sur `len`, historique, index journaliers, planificateur, NTP et ancienne API supprimés, topics `maxpv/<id>`, `NTPClient` retiré) | spec `ha-mqtt-ui` (PR #9 mergée, `7f44c0c`, CI de la PR verte ; run `main` en cours, test sur matériel et UI en navigateur à faire) |
 | P1-6 à P1-8, P2-1, P2-2, P3-1, P3-7 | ☐ non traités (`EcoPV3.ino` intact) | |
+| Nouveautés 4.00 | ✅ Home Assistant via MQTT (autodiscovery de 59 entités, `maxpv_mqtt.h` testé en natif), UI à 5 onglets (Pico CSS, JS vanilla, sans ressource externe), backend HTTP interne (`/status`, `/params`, `/config`, `/cmd`, `/backup`), blueprints HA (BOOST programmé, RelayPlus, relais miroir) contrôlés par `check_blueprints.py`, CI sans FTP, doc API PDF supprimée | PR #9 (`7f44c0c`) |
 
 Notes de livraison :
 - Versions épinglées (PlatformIO 6.2.0, plateforme et libs exactes) ; pile async esp32async ; ElegantOTA 4.0.0 (AGPL-3.0, cf. `credits.html` et README).
@@ -91,7 +92,7 @@ Notes de livraison :
 - Toutes les mutations passent par `HTTP_GET`. N'importe quelle page web ouverte sur le LAN peut déclencher `http://maxpv.local/api/action?format` avec une simple `<img>`.
 - Proposition : mutations en POST seulement. Ce n'est pas une protection CSRF complète, mais cela bloque les vecteurs triviaux. Il faut adapter le frontend et la doc API (`Documentation API/API_MaxPV.pdf`), ce qui casse l'API.
 
-### P1-3 Secrets exposés (confirmé, S)
+### ✅ P1-3 Secrets exposés (confirmé, S) — traité
 - `/api/get?configmaxpv` (`:2080-2081`) et `/DLconfig` (`:2039-2042`) renvoient `mqtt_pass` en clair.
 - Proposition : masquer `mqtt_pass` dans `configmaxpv` ; si le champ reçu est vide, conserver l'ancien mot de passe. `/DLconfig` reste complet (c'est une sauvegarde), mais derrière l'auth de P1-1.
 
@@ -99,7 +100,7 @@ Notes de livraison :
 - `setParamEcoPV()` (`:1035-1051`) concatène `param` brut (seul `toInt()` est contrôlé) et `value` (où seule la virgule est remplacée). Avec `param=1,END#FORMAT` ou `value=5#FORMAT`, le Nano reçoit une seconde commande arbitraire, puisque `#` sert de délimiteur.
 - Proposition : reformater `param` à partir de l'entier et n'accepter que `[-0-9.]` dans `value`.
 
-### P1-5 `onMqttMessage` lit au-delà du payload (confirmé, S)
+### ✅ P1-5 `onMqttMessage` lit au-delà du payload (confirmé, S) — traité
 - `:1763-1784` construit `String(payload)` alors que le payload AsyncMqttClient n'est pas terminé par un NUL (`len` est fourni). Lecture hors buffer : comportement indéfini, crash possible.
 - Proposition : comparer avec `strncmp(payload, "...", len)` ou construire la `String` sur `len` octets.
 
@@ -133,34 +134,34 @@ Notes de livraison :
 - Si la sonde est absente ou en défaut, `temperatureECS` vaut -99 (`EcoPV3.ino:1503-1510`). Les contrôles ESP (`MaxPV3.ino:962,1389,1781,2070`) laissent alors le BOOST démarrer et ne l'arrêtent jamais. La sonde n'est détectée qu'au boot (`EcoPV3.ino:547`).
 - Proposition : quand `temp_limit_active` est actif et la température vaut -99, refuser ou arrêter le BOOST et logger. Le thermostat du ballon reste la vraie sécurité ; c'est donc un choix de comportement.
 
-### P2-3 Index journaliers faux après un reboot de l'ESP (confirmé, M)
+### ✅ P2-3 Index journaliers faux après un reboot de l'ESP (confirmé, M) — traité
 - `setRefIndexJour()` est appelé au boot (`:479`). Après une OTA, un crash ou le watchdog, les compteurs « du jour » repartent de zéro. Si le Nano n'a pas encore répondu, la référence est vide et le compteur du jour égale le total (`index.html:281-285`).
 - L'historique (`energyIndexHistoric`, `:197`) n'existe qu'en RAM : il est perdu à chaque reboot.
 - Proposition : persister les références du jour avec leur date dans LittleFS et les recharger si la date correspond. L'historique peut éventuellement être persisté à chaque relevé (toutes les 30 min, usure flash acceptable).
 
-### P2-4 Planificateur : double déclenchement et heure non synchronisée (confirmé, S)
+### ✅ P2-4 Planificateur : double déclenchement et heure non synchronisée (confirmé, S) — traité
 - `timeScheduler()` (`:1370-1404`) tourne toutes les 59,654 s : environ une fois toutes les 170 minutes, il s'exécute deux fois dans la même minute. Le BOOST est alors relancé (durée prolongée) et RelayPlus réinitialisé. Le commentaire `:624-625` prévoit ce cas, mais le code ne le gère pas.
 - Il n'y a aucune garde `isTimeTrue` : avant la synchro NTP, l'heure vaut 01:00 (epoch 0 en heure de Paris).
 - Proposition : mémoriser la dernière minute traitée et ne rien faire tant que `isTimeTrue` est faux.
 
-### P2-5 Messages Nano sans terminateur `#` (confirmé, S)
+### ✅ P2-5 Messages Nano sans terminateur `#` (confirmé, S) — traité
 - `EcoPV3.ino:1125,1142,1400,1415` envoient `BOOSTTIME,-1,END` et `RELAYPLUSTIME,-1,END` sans `#`. Côté ESP, le message est fusionné avec la trame suivante, et la trame STATS qui suit est perdue.
 - `RELAYPLUSTIME` n'est pas traité côté ESP (`serialProcess`, `:906-1010`).
 - Proposition : ajouter `#` ; traiter ou ignorer explicitement `RELAYPLUSTIME`.
 
-### P2-6 `P_CALIB` peut valoir 0 (confirmé, S)
+### ✅ P2-6 `P_CALIB` peut valoir 0 (confirmé, S) — traité
 - La borne min est 0 (`EcoPV3.ino:277`). L'assistant calcule `p_calib = ... / Papp` (`wizard.html:433`) : si Papp vaut 0, on envoie `Infinity`, que le Nano ramène à 0. Au redémarrage suivant, `0.5 / P_CALIB` (`:1684-1715`) est infini : consigne et anti-windup sont faux.
 - Proposition : borne min > 0 (par exemple 0.001) côté Nano, garde `Papp > 0` côté assistant.
 
-### P2-7 Rafales de commandes : risque de saturer le buffer série du Nano (à vérifier, M)
+### ✅ P2-7 Rafales de commandes : risque de saturer le buffer série du Nano (à vérifier, M) — traité
 - L'assistant envoie 4 à 5 `SETPARAM` en parallèle (`wizard.html:393-408,447-450`). Chaque commande fait environ 20 octets, le buffer RX du Nano 64 octets, et `temperatureRead()` bloque environ 94 ms. Des commandes peuvent être perdues sans erreur.
 - Proposition : envoi séquentiel côté UI (attendre la réponse avant la suivante), et vérification par relecture des paramètres (déjà faite via `shouldReadParams`).
 
-### P2-8 `configRead` : bug de clé `mqtt_pass` (confirmé, S)
+### ✅ P2-8 `configRead` : bug de clé `mqtt_pass` (confirmé, S) — traité
 - `:683` teste `containsKey("mqtt_user")` pour lire `mqtt_pass`. Si la clé `mqtt_pass` manque, le mot de passe devient `"null"` (ArduinoJson 6, `as<String>()` sur une valeur null).
 - Proposition : tester `mqtt_pass`.
 
-### P2-9 Topics MQTT fixes (confirmé, M)
+### ✅ P2-9 Topics MQTT fixes (confirmé, M) — traité
 - Tous les topics sont en dur sous `maxpv/` (`maxpv_defines.h:179-209`). Avec deux MaxPV sur le même broker, états et commandes se mélangent. L'`uniq_id` HA est unique, mais les `stat_t`/`cmd_t` sont partagés.
 - Proposition : préfixe configurable, `maxpv` par défaut pour rester compatible.
 
@@ -169,14 +170,14 @@ Notes de livraison :
 ## P3 : qualité et maintenance
 
 - **P3-1** Code mort ou trompeur : variables locales qui masquent les globales `maxTemp`/`tempLimitActive` dans `timeScheduler()` (`MaxPV3.ino:1392-1394`) ; branche dupliquée `EcoPV3.ino:813-814`.
-- **P3-2** Log `[WARNING LOOP TIME]` (`MaxPV3.ino:604`) publié en retain à chaque boucle de plus de 100 ms : bruit MQTT. Ajouter un seuil ou un rate-limit.
-- **P3-3** Frontend dépendant d'Internet : Bootstrap et Highcharts viennent de CDN, sans LAN isolé il n'y a plus d'UI. Highcharts n'a pas d'attribut SRI (`graph.html:188-194`). Ajouter le SRI, au minimum.
+- **P3-2** ✅ Log `[WARNING LOOP TIME]` (`MaxPV3.ino:604`) publié en retain à chaque boucle de plus de 100 ms : bruit MQTT. Ajouter un seuil ou un rate-limit.
+- **P3-3** ✅ Frontend dépendant d'Internet : Bootstrap et Highcharts viennent de CDN, sans LAN isolé il n'y a plus d'UI. Highcharts n'a pas d'attribut SRI (`graph.html:188-194`). Ajouter le SRI, au minimum.
 - **P3-4** ✅ (traité, `textContent`) `whatsnew` du fichier `latest` injecté en `innerHTML` (`main.html:172,180`) : le contenu distant s'exécute avec les droits de l'UI locale, donc avec accès à l'API sans auth. Après P0-5, le risque se limite à une compromission de mon propre dépôt. Utiliser `textContent` ou une liste blanche.
-- **P3-5** Assistant : le bouton « Commencer » remet les index d'énergie à zéro (`wizard.html:125`) sans confirmation.
+- **P3-5** ✅ Assistant : le bouton « Commencer » remet les index d'énergie à zéro (`wizard.html:125`) sans confirmation.
 - **P3-6** ◐ (reste `NTPClient`) Dépendances : `AsyncElegantOTA` est déprécié (remplacé par ElegantOTA v3 en mode async) ; les libs khoih-prog sont archivées ; `NTPClient` est déclaré mais inutilisé (`platformio.ini:28`, l'heure passe par `configTzTime`).
 - **P3-7** Nano sans watchdog matériel (`wdt_enable`). Index sauvegardés une fois par heure (`EcoPV3.ino:1343`) : jusqu'à 1 h de comptage perdu sur coupure. Choix de conception, à documenter.
-- **P3-8** Doc API en PDF binaire (`Documentation API/API_MaxPV.pdf`) : impossible de suivre ses changements avec git. Envisager une version Markdown.
-- **P3-9** `favicon.ico` servi en `image/png` (`MaxPV3.ino:2035`) ; `onNotFound` redirige vers `/` au lieu de renvoyer 404, ce qui gêne les clients de l'API.
+- **P3-8** ✅ Doc API en PDF binaire (`Documentation API/API_MaxPV.pdf`) : impossible de suivre ses changements avec git. Envisager une version Markdown.
+- **P3-9** ✅ `favicon.ico` servi en `image/png` (`MaxPV3.ino:2035`) ; `onNotFound` redirige vers `/` au lieu de renvoyer 404, ce qui gêne les clients de l'API.
 
 ---
 
