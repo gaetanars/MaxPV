@@ -57,7 +57,7 @@ arduino-cli upload --fqbn arduino:avr:nano:cpu=atmega328 -p /dev/ttyUSB0 EcoPV
 2. Ouvrez <http://maxpv.local/> (ou l'adresse IP du Wemos). L'en-tête indique l'état du Nano (routeur), de MQTT et la version.
 3. Onglet **Étalonnage** : l'assistant guide les nouveaux utilisateurs. Sinon, saisissez les paramètres un par un dans l'onglet **Routeur**.
 
-   <!-- ![Assistant d'étalonnage](../images/ui-etalonnage.png) -->
+   ![Assistant d'étalonnage](../images/ui-etalonnage.png)
 
 4. Deux paramètres sont apparus avec la 3.5 : **P_INSTALLPV** (puissance de l'installation en Wc) et **CNT_CALIB** (poids en Wh des impulsions du compteur de production).
 5. Onglet **Réseau** : saisissez l'hôte du broker MQTT (vide = MQTT désactivé), puis enregistrez : le Wemos redémarre.
