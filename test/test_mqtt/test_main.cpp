@@ -30,7 +30,7 @@ static const char *const PARAM_SUFFIX[16] = {
     "V_CALIB", "P_CALIB", "PHASE_CALIB", "P_OFFSET", "P_RESISTANCE", "P_MARGIN",
     "GAIN_P", "GAIN_I", "E_RESERVE", "P_DIV2_ACTIVE", "P_DIV2_IDLE", "T_DIV2_ON",
     "T_DIV2_OFF", "T_DIV2_TC", "CNT_CALIB", "P_INSTALLPV"};
-static const double PARAM_MIN[16] = {0, 0, -16, -100, 100, -2000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100};
+static const double PARAM_MIN[16] = {0, 0.0001, -16, -100, 100, -2000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100};
 static const double PARAM_MAX[16] = {2, 1, 48, 100, 10000, 2000, 1000, 1000, 200, 9999, 9999, 240, 240, 60, 1000, 30000};
 
 struct Existing {
@@ -267,7 +267,11 @@ void test_discovery_commands_are_handled() {
     if (comp == "button") value = "PRESS";
     else if (comp == "switch") value = "ON";
     else if (comp == "select") value = "auto";
-    else value = std::to_string((int)doc["min"].as<double>());
+    else {
+      char mn[24];
+      snprintf(mn, sizeof mn, "%g", doc["min"].as<double>());
+      value = mn;
+    }
     MqttCommand out;
     memset(&out, 0, sizeof out);
     TEST_ASSERT_TRUE_MESSAGE(handleCommand(key.c_str(), value.c_str(), false, ctx, out), raw.c_str());
@@ -352,8 +356,9 @@ void test_params_json() {
 
 // ---- R6 handleCommand ----
 static bool cmd(const char *key, const char *value, bool http, MqttCommand &out,
-                bool limit = false, double temp = 20.0, long maxT = 45) {
-  MqttCmdContext ctx{limit, temp, maxT};
+                bool limit = false, double temp = 20.0, long maxT = 45,
+                bool ssrStop = false, bool boostActive = false) {
+  MqttCmdContext ctx{limit, temp, maxT, ssrStop, boostActive};
   memset(&out, 0, sizeof out);
   out.action = CMD_NONE;
   return handleCommand(key, value, http, ctx, out);
@@ -395,6 +400,35 @@ void test_boost() {
   TEST_ASSERT_TRUE(cmd("boost", "ON", false, o, false, 80.0, 45));
   // OFF toujours accepte
   TEST_ASSERT_TRUE(cmd("boost", "OFF", false, o, true, 80.0, 45));
+}
+
+void test_boost_ssr_stop() {
+  MqttCommand o;
+  // SSR en STOP sans BOOST en cours : ON refuse
+  TEST_ASSERT_FALSE(cmd("boost", "ON", false, o, false, 20.0, 45, true, false));
+  TEST_ASSERT_FALSE(cmd("boost", "ON", true, o, false, 20.0, 45, true, false));
+  // BOOST en cours : relancable
+  TEST_ASSERT_TRUE(cmd("boost", "ON", false, o, false, 20.0, 45, true, true));
+  // OFF toujours accepte
+  TEST_ASSERT_TRUE(cmd("boost", "OFF", false, o, false, 20.0, 45, true, false));
+}
+
+void test_boost_sonde_defaut() {
+  MqttCommand o;
+  // limite active : sonde absente (-99) ou valeur vide (0) = refus
+  TEST_ASSERT_FALSE(cmd("boost", "ON", false, o, true, -99.0, 45));
+  TEST_ASSERT_FALSE(cmd("boost", "ON", false, o, true, 0.0, 45));
+  TEST_ASSERT_TRUE(cmd("boost", "ON", false, o, true, 20.0, 45));
+  // limite inactive : accepte
+  TEST_ASSERT_TRUE(cmd("boost", "ON", false, o, false, -99.0, 45));
+}
+
+void test_p_calib_positive() {
+  MqttCommand o;
+  TEST_ASSERT_FALSE(cmd("p_calib", "0", false, o));
+  TEST_ASSERT_FALSE(cmd("p_calib", "0", true, o));
+  TEST_ASSERT_TRUE(cmd("p_calib", "0.0001", false, o));
+  TEST_ASSERT_TRUE(cmd("p_calib", "0.111", false, o));
 }
 
 void test_ecopv_params() {
@@ -517,6 +551,9 @@ int main(int, char **) {
   RUN_TEST(test_params_json);
   RUN_TEST(test_modes_exact_match);
   RUN_TEST(test_boost);
+  RUN_TEST(test_boost_ssr_stop);
+  RUN_TEST(test_boost_sonde_defaut);
+  RUN_TEST(test_p_calib_positive);
   RUN_TEST(test_ecopv_params);
   RUN_TEST(test_esp_settings);
   RUN_TEST(test_buttons_press_only);

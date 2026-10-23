@@ -31,7 +31,8 @@ Légende des priorités :
 | P1-5, P2-3, P2-4, P2-5 (côté ESP), P2-6 et P2-7 (côté UI), P2-9, P3-2, P3-3, P3-5, P3-6, P3-8, P3-9 | ✅ traités ou rendus obsolètes (MaxPV! 4.00 : lecture du payload sur `len`, historique, index journaliers, planificateur, NTP et ancienne API supprimés, topics `maxpv/<id>`, `NTPClient` retiré) | spec `ha-mqtt-ui` (PR #9 mergée, `7f44c0c`, CI de la PR verte ; run `main` en cours, test sur matériel et UI en navigateur à faire) |
 | P1-1 | ✅ décision (c) statu quo, documentée (`README.md:87`) | |
 | P1-6, P1-7, P1-8 | ✅ attentes du Nano au boot bornées (`NANO_BOOT_TIMEOUT`), timeout du portail Wifi si un réseau est mémorisé puis redémarrage (`WIFI_PORTAL_TIMEOUT`), `configWrite` via `/config.tmp` + `rename` atomique ; test sur matériel à faire | spec `p1-robustesse` |
-| P2-1, P2-2, P3-1, P3-7 | ☐ non traités (`EcoPV3.ino` intact) | |
+| P2-1, P2-2, P2-5 (côté Nano), P2-6 (côté Nano) | ✅ BOOST refusé si le SSR est en STOP, mode SSR restauré en fin de BOOST, BOOST refusé ou arrêté si la sonde est en défaut (limite active), `#` ajouté aux messages `BOOSTTIME`/`RELAYPLUSTIME`, `P_CALIB` > 0 ; RelayPlus traité par documentation ; test sur matériel à faire | spec `p2-justesse` |
+| P3-1, P3-7 | ☐ non traités | |
 | Nouveautés 4.00 | ✅ Home Assistant via MQTT (autodiscovery de 59 entités, `maxpv_mqtt.h` testé en natif), UI à 5 onglets (Pico CSS, JS vanilla, sans ressource externe), backend HTTP interne (`/status`, `/params`, `/config`, `/cmd`, `/backup`), blueprints HA (BOOST programmé, RelayPlus, relais miroir) contrôlés par `check_blueprints.py`, CI sans FTP, doc API PDF supprimée | PR #9 (`7f44c0c`) |
 
 Notes de livraison :
@@ -126,13 +127,13 @@ Notes de livraison :
 
 ## P2 : justesse fonctionnelle
 
-### P2-1 BOOST et RelayPlus passent outre un arrêt manuel (confirmé, S) — décision requise
+### ✅ P2-1 BOOST et RelayPlus passent outre un arrêt manuel (confirmé, S) — traité
 - Le BOOST programmé (`MaxPV3.ino:1387-1390`) démarre même si le SSR est en STOP. Pendant le BOOST, le Nano force FORCE/STOP (`EcoPV3.ino:1403-1404`), et en fin de BOOST le SSR passe en AUTOM (`:1398`) au lieu de revenir au mode précédent.
 - RelayPlus remet chaque jour le relais en AUTOM (`MaxPV3.ino:1402`).
 - Impact : un STOP posé pour une intervention sur le chauffe-eau est levé automatiquement.
 - Options : (a) ne pas lancer de BOOST ni d'init RelayPlus si le mode est STOP ; (b) mémoriser le mode et le restaurer en fin de BOOST ; (c) statu quo documenté. Recommandation : (a) + (b).
 
-### P2-2 Limite de température qui laisse passer en cas d'échec de lecture (confirmé, S) — décision requise
+### ✅ P2-2 Limite de température qui laisse passer en cas d'échec de lecture (confirmé, S) — traité
 - Si la sonde est absente ou en défaut, `temperatureECS` vaut -99 (`EcoPV3.ino:1503-1510`). Les contrôles ESP (`MaxPV3.ino:962,1389,1781,2070`) laissent alors le BOOST démarrer et ne l'arrêtent jamais. La sonde n'est détectée qu'au boot (`EcoPV3.ino:547`).
 - Proposition : quand `temp_limit_active` est actif et la température vaut -99, refuser ou arrêter le BOOST et logger. Le thermostat du ballon reste la vraie sécurité ; c'est donc un choix de comportement.
 
@@ -226,7 +227,7 @@ Notes de livraison :
 ## Décisions prises (2026-10-22)
 - **P1-1** : (c) statu quo. Pas d'authentification, à documenter comme « réseau de confiance » (README). L'OTA `/update` reste ouverte.
 - **P1-2** : passage des mutations en POST (rupture d'API assumée). Règle aussi P0-4 : envoyer la config en corps POST.
-- **P2-1** : (a) + (b). Pas de BOOST ni d'init RelayPlus si le mode est STOP ; fin de BOOST = retour au mode mémorisé.
+- **P2-1** : (a) + (b). Pas de BOOST ni d'init RelayPlus si le mode est STOP ; fin de BOOST = retour au mode mémorisé. RelayPlus (blueprint) traité par documentation : le STOP manuel levé à minuit est signalé dans la description du blueprint.
 - **P2-2** : limite de température active et sonde en défaut (-99) : refuser ou arrêter le BOOST, avec log.
 - **CI-8** : (b). La CI attache les assets à noms fixes à la release ; le README pointe vers `releases/latest/download/...` ; `Binaires MaxPV/` est retiré du dépôt ensuite (après CI-1).
 

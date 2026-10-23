@@ -127,7 +127,7 @@ static const char MQTT_ENTITY_TABLE[] PROGMEM =
     "switch|Boost|Boost|boost|s\n"
     "switch|LimiteTemperature|Limite de température|temp_limit|p||||c\n"
     "number|V_CALIB|Calibrage tension|v_calib|p||||c||0|2|0.0001\n"
-    "number|P_CALIB|Calibrage puissance|p_calib|p||||c||0|1|0.0001\n"
+    "number|P_CALIB|Calibrage puissance|p_calib|p||||c||0.0001|1|0.0001\n"
     "number|PHASE_CALIB|Calibrage phase|phase_calib|p||||c||-16|48|1\n"
     "number|P_OFFSET|Offset de puissance|p_offset|p|||W|c||-100|100|1\n"
     "number|P_RESISTANCE|Puissance de la résistance|p_resistance|p|||W|c||100|10000|1\n"
@@ -408,6 +408,8 @@ struct MqttCmdContext {
   bool tempLimitActive;
   double temp;
   long maxTemp;
+  bool ssrStop;
+  bool boostActive;
 };
 
 struct MqttCommand {
@@ -461,7 +463,8 @@ inline bool handleCommand(const char *key, const char *value, bool fromHttp,
 
   if (strcmp(key, "boost") == 0) {
     if (strcmp(value, "ON") == 0) {
-      if (ctx.tempLimitActive && !(ctx.temp < (double)ctx.maxTemp)) return false;
+      if (ctx.ssrStop && !ctx.boostActive) return false;
+      if (ctx.tempLimitActive && (ctx.temp <= 0 || !(ctx.temp < (double)ctx.maxTemp))) return false;
       out.action = CMD_BOOST_ON;
       return true;
     }

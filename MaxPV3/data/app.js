@@ -6,7 +6,7 @@ const PARAMS = [
   ['p_resistance', 'P_RESISTANCE', 'Puissance de la résistance commandée (W)', 100, 10000, 1],
   ['cnt_calib', 'CNT_CALIB', "Poids des impulsions du compteur d'impulsions (Wh)", 0, 1000, 0.0001],
   ['v_calib', 'V_CALIB', 'Facteur de calibrage de la tension', 0, 2, 0.0001],
-  ['p_calib', 'P_CALIB', 'Facteur de calibrage de la puissance', 0, 1, 0.0001],
+  ['p_calib', 'P_CALIB', 'Facteur de calibrage de la puissance', 0.0001, 1, 0.0001],
   ['phase_calib', 'PHASE_CALIB', 'Facteur de calibrage de la phase', -16, 48, 1],
   ['p_offset', 'P_OFFSET', 'Décalage de puissance active (W)', -100, 100, 1],
   ['p_margin', 'P_MARGIN', 'Consigne de régulation (W)', -2000, 2000, 1],

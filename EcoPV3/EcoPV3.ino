@@ -401,6 +401,7 @@ bool                   hasRestarted     = false;    // flag indiquant que le rou
 // ***********************************************************************************
 
 long                   boostTime = -1;         // Temps restant pour le mode BOOST, en secondes (-1 = arrêt)
+byte                   triacModeBeforeBoost = AUTOM; // Mode SSR mémorisé au démarrage du BOOST, restauré à son arrêt
 int                    burstCnt  = 0;          // Compteur de la PWM software pour la gestion du mode BOOST entre 0 et BOOST_BURST_PERIOD
 int                    burstThreshold  = 10;   // Instant de mise en route SSR dans la période burst pour le mode BOOST entre 0 et BOOST_BURST_PERIOD
 
@@ -1066,7 +1067,8 @@ void serialRequest ( void ) {
 
       int paramNum = incomingCommand.substring ( 0, 2 ).toInt ( );
 
-      if ( ( paramNum > 0) && ( paramNum <= NB_PARAM ) ) {
+      boolean paramOk = ( ( paramNum > 0) && ( paramNum <= NB_PARAM ) );
+      if ( paramOk ) {
         int index = paramNum - 1;
         byte dataType = pvrParamConfig [index].dataType;
         int minValue = pvrParamConfig [index].minValue;
@@ -1076,13 +1078,14 @@ void serialRequest ( void ) {
         if ( dataType == 1 ) {
           valueFloat = incomingCommand.substring ( 3 ).toFloat ( );
           valueFloat = constrain ( valueFloat, float ( minValue ), float ( maxValue ) );
+          if ( ( index == 1 ) && ( valueFloat <= 0 ) ) paramOk = false; // P_CALIB doit rester > 0
         }
         else {
           valueInt = incomingCommand.substring ( 3 ).toInt ( );
           valueInt = constrain ( valueInt, minValue, maxValue );
         }
 
-        switch ( dataType ) {
+        if ( paramOk ) switch ( dataType ) {
           case 0: {
               int *tmp_int = (int *) pvrParamConfig [index].adr;
               noInterrupts ( );
@@ -1105,8 +1108,8 @@ void serialRequest ( void ) {
               break;
             }
         }
-        Serial.print ( F("DONE:SETPARAM,OK,") );
       }
+      if ( paramOk ) Serial.print ( F("DONE:SETPARAM,OK,") );
       else Serial.print ( F("NOK:SETPARAM,OK,") );
     }
 
@@ -1122,7 +1125,7 @@ void serialRequest ( void ) {
       // au changement de mode relais
       if ( relayplusTime >= 0 ) {
           relayplusTime = -1;
-          Serial.print ( F("RELAYPLUSTIME,-1,END") );
+          Serial.print ( F("RELAYPLUSTIME,-1,END#") );
       }
       Serial.print ( F("DONE:SETRELAY,OK,") );
     }
@@ -1139,7 +1142,7 @@ void serialRequest ( void ) {
       // au changement de mode SSR
       if ( boostTime >= 0 ) {
           boostTime = -1;
-          Serial.print ( F("BOOSTTIME,-1,END") );
+          Serial.print ( F("BOOSTTIME,-1,END#") );
       }
       Serial.print ( F("DONE:SETSSR,OK,") );
     }
@@ -1154,6 +1157,7 @@ void serialRequest ( void ) {
 
       bT = incomingCommand.toInt ( );
       bT = constrain ( bT, 0, 86400 );
+      if ( ( bT != 0 ) && ( boostTime == -1 ) ) triacModeBeforeBoost = triacMode;
       if ( ( bT != 0 ) || ( boostTime != -1 ) ) boostTime = bT;
       index = incomingCommand.indexOf(',');
       if ( index != -1 ) burstRatio = incomingCommand.substring ( index + 1 ).toInt ( );
@@ -1222,7 +1226,7 @@ bool eeConfigRead ( void ) {
   else {
     noInterrupts ( );
     V_CALIB       = pvrConfig.v_calib;
-    P_CALIB       = pvrConfig.p_calib;
+    if ( pvrConfig.p_calib > 0 ) P_CALIB = pvrConfig.p_calib; // 0 invalide : valeur courante conservée
     PHASE_CALIB   = pvrConfig.phase_calib;
     P_OFFSET      = pvrConfig.p_offset;
     P_RESISTANCE  = pvrConfig.p_resistance;
@@ -1395,9 +1399,9 @@ void PVRScheduler ( void ) {
   //*** Toutes les secondes : Traitement du mode BOOST
   if (boostTime == 0) {
     boostTime--;
-    triacMode = AUTOM;
+    triacMode = triacModeBeforeBoost;
     // Envoi immédiat de la fin du mode Boost
-    Serial.print ( F("BOOSTTIME,-1,END") );
+    Serial.print ( F("BOOSTTIME,-1,END#") );
   }
   else if (boostTime > 0) {
     if ( burstCnt <= burstThreshold ) triacMode = FORCE;
@@ -1412,7 +1416,7 @@ void PVRScheduler ( void ) {
     relayplusTime--;
     relayMode = STOP;
     // Envoi immédiat de la fin du mode relayPlus
-    Serial.print ( F("RELAYPLUSTIME,-1,END") );
+    Serial.print ( F("RELAYPLUSTIME,-1,END#") );
   }
   else if (relayplusTime > 0) {
     relayplusTime--;
