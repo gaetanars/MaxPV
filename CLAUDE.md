@@ -21,7 +21,7 @@ pio run -e d1_mini -t upload / uploadfs
 
 - `pio test -e native` : tests natifs sur l'hôte (Unity, ArduinoJson), dans `test/`.
 - `platformio.ini` : `src_dir=MaxPV3`, `data_dir=MaxPV3/data` ; toutes les libs viennent de `lib_deps`, y compris la pile async esp32async (ESPAsyncWebServer / ESPAsyncTCP) et ElegantOTA (mode async via `-DELEGANTOTA_USE_ASYNC_WEBSERVER=1`).
-- `extra_script.py` extrait `MAXPV_VERSION` de `MaxPV3/maxpv_defines.h` par regex pour nommer les binaires : garder le format `#define MAXPV_VERSION "x.yy"`.
+- `extra_script.py` extrait `MAXPV_VERSION` de `MaxPV3/maxpv_defines.h` par regex pour nommer les binaires : garder le format `#define MAXPV_VERSION "x.y.z"`.
 - CI `.github/workflows/build.yml` (actions épinglées par SHA, PlatformIO et libs en versions exactes, Dependabot mensuel) : jobs `lint` (actionlint, `check_blueprints.py` avec `pyyaml==6.0.2`), `build` (ESP + fs, tests natifs `pio test -e native`, EcoPV `nano`/`nano_oled` via `ci/ecopv.ini`, image fusionnée `MaxPV<ver>_full.bin` via `esptool merge-bin` (firmware `0x0` + filesystem `0x300000`, taille contrôlée), `pio check` non bloquant) sur push `main`/PR/dispatch ; sur tag `v*`, job `release` (contrôle des versions, release publiée + `.bin`).
 - Le firmware EcoPV se flashe via l'IDE Arduino (libs OneWire, DallasTemperature, SSD1306Ascii optionnelle pour l'écran oLed).
 
@@ -38,8 +38,8 @@ pio run -e d1_mini -t upload / uploadfs
 
 MaxPV! (`MAXPV_VERSION` / `MAXPV_VERSION_FULL` dans `maxpv_defines.h`), site Web (`MaxPV3/data/versionweb.txt`), EcoPV (`#define VERSION` dans `EcoPV3.ino:87`). Une release met à jour :
 - le fichier `latest` à la racine (JSON `ecopvver`/`maxpvver`/`webver`/`whatsnew`), lu par `main.html` via raw.githubusercontent.com (dépôt `gaetanars/MaxPV`, branche `main`) pour signaler une mise à jour ; `whatsnew` est affiché en texte brut ;
-- la section « Versions » du `README.md` (entrée datée, avec les trois numéros) ;
-- le tag `v<MAXPV_VERSION>` (ex. `v3.62`) : la CI vérifie la cohérence avec `scripts/check_versions.py`, puis publie la release avec les `.bin` versionnés et les assets à noms fixes `MaxPV3_firmware.bin` / `MaxPV3_filesystem.bin` (OTA) et `MaxPV3_full.bin` (installation initiale USB à `0x0`, utilisée par le README). Aucun binaire n'est commité.
+- `CHANGELOG.md` (entrée datée, avec les trois numéros) ;
+- le tag `v<MAXPV_VERSION>` (ex. `v4.0.0`) : la CI vérifie la cohérence avec `scripts/check_versions.py`, puis publie la release avec les `.bin` versionnés et les assets à noms fixes `MaxPV3_firmware.bin` / `MaxPV3_filesystem.bin` (OTA) et `MaxPV3_full.bin` (installation initiale USB à `0x0`, utilisée par le README). Aucun binaire n'est commité.
 
 ## Points d'attention
 
