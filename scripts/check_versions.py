@@ -29,12 +29,12 @@ def main():
     args = parser.parse_args()
     root = args.root
 
-    defines = read(root / "MaxPV3" / "maxpv_defines.h")
+    defines = read(root / "MaxPV" / "maxpv_defines.h")
     maxpv = find(defines, r'^#define\s+MAXPV_VERSION\s+"([^"]*)"')
     maxpv_full = find(defines, r'^#define\s+MAXPV_VERSION_FULL\s+"([^"]*)"')
-    web = read(root / "MaxPV3" / "data" / "versionweb.txt")
+    web = read(root / "MaxPV" / "data" / "versionweb.txt")
     web = web.strip() if web is not None else None
-    ecopv = find(read(root / "EcoPV3" / "EcoPV3.ino"), r'^#define\s+VERSION\s+"([^"]*)"')
+    ecopv = find(read(root / "EcoPV" / "EcoPV.ino"), r'^#define\s+VERSION\s+"([^"]*)"')
 
     latest = {}
     try:
@@ -58,7 +58,7 @@ def main():
     expect("MAXPV_VERSION_FULL", maxpv_full,
            "MaxPV! " + maxpv if maxpv is not None else None, '"MaxPV! " + MAXPV_VERSION')
     expect("latest.webver", latest.get("webver"), web, "versionweb.txt")
-    expect("latest.ecopvver", latest.get("ecopvver"), ecopv, "EcoPV3.ino VERSION")
+    expect("latest.ecopvver", latest.get("ecopvver"), ecopv, "EcoPV.ino VERSION")
     if args.tag is not None:
         expect("tag", args.tag, "v" + maxpv if maxpv is not None else None, '"v" + MAXPV_VERSION')
 

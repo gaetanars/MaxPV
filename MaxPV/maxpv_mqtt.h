@@ -3,7 +3,7 @@
   Fonctions pures (aucune dependance au materiel), testees en natif
   (test/test_mqtt). Voir docs/specs/ha-mqtt-ui/SPEC.md (R4, R5, R6).
 
-  This file is a part of MaxPV_ESP.ino, licensed under the GNU Lesser General
+  This file is a part of MaxPV.ino, licensed under the GNU Lesser General
   Public License, version 2.1 or (at your option) any later version.
 */
 

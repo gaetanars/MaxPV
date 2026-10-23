@@ -64,7 +64,7 @@ flowchart LR
 Détail de chaque étape dans [docs/installation.md](docs/installation.md).
 
 1. **Matériel** : réalisez la carte ([schémas](SchemasMaxPV/)).
-2. **Nano** : téléversez [`EcoPV3/EcoPV3.ino`](EcoPV3/EcoPV3.ino) avec l'IDE Arduino.
+2. **Nano** : téléversez [`EcoPV/EcoPV.ino`](EcoPV/EcoPV.ino) avec l'IDE Arduino.
 3. **Wemos** : flashez [`MaxPV_full.bin`](https://github.com/gaetanars/MaxPV/releases/latest/download/MaxPV_full.bin) à l'adresse `0x0`.
 4. **Wifi** : connectez-vous au réseau **MaxPV** et choisissez votre Wifi dans le portail captif.
 5. **MQTT** : ouvrez <http://maxpv.local/>, onglet **Réseau**, saisissez l'hôte du broker ; l'appareil apparaît dans Home Assistant.
@@ -94,4 +94,4 @@ Détail de chaque étape dans [docs/installation.md](docs/installation.md).
 
 - Le code de MaxPV! est distribué sous licence LGPL 2.1+ ; il est issu de [Jetblack31/MaxPV](https://github.com/Jetblack31/MaxPV) (Bernard Legrand / Jetblack31) et d'[EcoPV](https://github.com/Jetblack31/EcoPV), dont l'attribution est conservée. Merci à Breizh13 pour les schémas de la carte et aux contributeurs du forum.
 - Le firmware du Wemos embarque ElegantOTA (AGPL-3.0) : les binaires distribués sont de ce fait soumis à l'AGPL-3.0.
-- L'interface embarque [Pico CSS](https://picocss.com) 2.1.1 (MIT), copie exacte de `@picocss/pico@2.1.1/css/pico.min.css`. SHA-256 de `MaxPV3/data/pico.min.css` : `fbc9a63fc9fc9f72d12fd7fc9806e11fa9f77ae4f9cad146b27003a1119ba3db`.
+- L'interface embarque [Pico CSS](https://picocss.com) 2.1.1 (MIT), copie exacte de `@picocss/pico@2.1.1/css/pico.min.css`. SHA-256 de `MaxPV/data/pico.min.css` : `fbc9a63fc9fc9f72d12fd7fc9806e11fa9f77ae4f9cad146b27003a1119ba3db`.

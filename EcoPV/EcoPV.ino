@@ -1,5 +1,5 @@
 /*
-  EcoPV3.ino - Arduino program that maximizes the use of home photovoltaïc production
+  EcoPV.ino - Arduino program that maximizes the use of home photovoltaïc production
   by monitoring energy consumption and diverting power to a resistive charge
   when needed.
   Copyright (C) 2019 - Bernard Legrand and Mickaël Lefebvre.

@@ -17,7 +17,7 @@ Schémas électroniques et liste des composants : [`SchemasMaxPV/`](../SchemasMa
 > [!WARNING]
 > Si vous migrez un système EcoPV existant, notez les paramètres du routeur : ils sont effacés et doivent être ressaisis à la fin de l'installation.
 
-1. Ouvrez [`EcoPV3/EcoPV3.ino`](../EcoPV3/EcoPV3.ino) dans l'IDE Arduino configuré pour la carte « Arduino Nano » et le processeur « ATmega328P » (ou « ATmega328P (Old Bootloader) » si le téléversement échoue, fréquent sur les clones).
+1. Ouvrez [`EcoPV/EcoPV.ino`](../EcoPV/EcoPV.ino) dans l'IDE Arduino configuré pour la carte « Arduino Nano » et le processeur « ATmega328P » (ou « ATmega328P (Old Bootloader) » si le téléversement échoue, fréquent sur les clones).
 2. Installez le cas échéant les bibliothèques OneWire et DallasTemperature.
 3. Écran oLed : dé-commentez la ligne 47 et vérifiez que SSD1306Ascii est installée.
 4. Pour que l'énergie délivrée en modes FORCE et BOOST ne soit pas comptée dans l'index d'énergie routée, modifiez la ligne 65.
@@ -29,8 +29,8 @@ Schémas électroniques et liste des composants : [`SchemasMaxPV/`](../SchemasMa
 ```
 arduino-cli core install arduino:avr
 arduino-cli lib install OneWire DallasTemperature SSD1306Ascii
-arduino-cli compile --fqbn arduino:avr:nano:cpu=atmega328 EcoPV3
-arduino-cli upload --fqbn arduino:avr:nano:cpu=atmega328 -p /dev/ttyUSB0 EcoPV3
+arduino-cli compile --fqbn arduino:avr:nano:cpu=atmega328 EcoPV
+arduino-cli upload --fqbn arduino:avr:nano:cpu=atmega328 -p /dev/ttyUSB0 EcoPV
 ```
 
 ## Programmation du Wemos
@@ -84,13 +84,13 @@ La 4.0.0 est une rupture.
 
 ## Compilation avec PlatformIO
 
-Pour une installation personnalisée (sources du Wemos dans [`MaxPV3/`](../MaxPV3/)) :
+Pour une installation personnalisée (sources du Wemos dans [`MaxPV/`](../MaxPV/)) :
 
 ```
 pio run -e d1_mini                      # firmware -> .pio/build/d1_mini/MaxPV<ver>_firmware.bin
-pio run --target buildfs -e d1_mini    # image LittleFS depuis MaxPV3/data -> MaxPV<ver>_filesystem.bin
+pio run --target buildfs -e d1_mini    # image LittleFS depuis MaxPV/data -> MaxPV<ver>_filesystem.bin
 pio run -e d1_mini -t upload / uploadfs
 pio test -e native                      # tests natifs sur l'hôte
 ```
 
-Le firmware du Nano se compile aussi avec `pio ci EcoPV3/EcoPV3.ino --project-conf ci/ecopv.ini -e nano`, mais se flashe via l'IDE Arduino.
+Le firmware du Nano se compile aussi avec `pio ci EcoPV/EcoPV.ino --project-conf ci/ecopv.ini -e nano`, mais se flashe via l'IDE Arduino.

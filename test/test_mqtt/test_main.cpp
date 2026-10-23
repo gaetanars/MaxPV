@@ -1,4 +1,4 @@
-// Tests natifs de MaxPV3/maxpv_mqtt.h (SPEC ha-mqtt-ui R4, R5, R6) :
+// Tests natifs de MaxPV/maxpv_mqtt.h (SPEC ha-mqtt-ui R4, R5, R6) :
 // etat JSON dans un buffer fixe, discovery HA par table PROGMEM, handleCommand.
 //
 // API attendue de maxpv_mqtt.h (fixee par docs/specs/ha-mqtt-ui/plan.md) :
