@@ -121,6 +121,7 @@ Dans `blueprints/automation/maxpv/` : `boost_programme.yaml` (BOOST à heure fix
 ## Watchdogs
 * **WatchDog Wifi** (`watchdogwifi_active`) : le Wemos envoie un ping toutes les 30 s, vers le DNS1 si l'IP est fixe, sinon vers la passerelle. Si la cible reste injoignable pendant 10 minutes, la connexion Wifi est ré-initialisée.
 * **Watchdog MQTT** (`watchdogmqtt_active`) : si MQTT est configuré et déconnecté depuis plus de 10 minutes, le Wemos redémarre. Avec un broker mal saisi, il redémarre donc toutes les 10 minutes (l'interface reste joignable entre deux) : désactivez ce watchdog si besoin.
+* **Arduino Nano** : pas de watchdog matériel, par choix de conception (certains Nano ont un ancien bootloader qui boucle en redémarrage après un reset du watchdog, et le firmware comporte des attentes longues volontaires). Les index d'énergie sont sauvegardés en EEPROM une fois par heure : une coupure secteur peut perdre jusqu'à 1 h de comptage. Une période plus courte userait l'EEPROM. Le bouton « Sauver les index » (onglet Routeur ou Home Assistant) force une sauvegarde, par exemple avant de couper le courant.
 
 ## Migration depuis la 3.x
 La 4.00 est une rupture. Retirés : historique et graphiques, index journaliers, BOOST programmé, RelayPlus (blueprints HA), relais distant (blueprint `relais_miroir`), FTP, NTP, `logMqtt`/`maxpv/SYS/*`, API `/api/*` et `/DLconfig` (le PDF n'existe plus), pages web multiples.
