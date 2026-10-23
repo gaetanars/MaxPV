@@ -1,6 +1,6 @@
 {
-  "ecopvver" : "3.60",
-  "maxpvver" : "4.00",
-  "webver" : "4.00",
-  "whatsnew" : "MaxPV! 4.00 : Home Assistant via MQTT en priorité (autodiscovery complète, paramètres, réglages et boutons), nouvelle interface web à 5 onglets sans ressource externe, watchdog MQTT, blueprints HA pour BOOST programmé, RelayPlus et relais miroir. Retirés : API HTTP, historique, FTP, NTP, relais distant. Voir le README : https://github.com/gaetanars/MaxPV"
+  "ecopvver" : "3.6.1",
+  "maxpvver" : "4.0.0",
+  "webver" : "4.0.0",
+  "whatsnew" : "MaxPV! 4.0.0 : Home Assistant via MQTT en priorité (autodiscovery complète, paramètres, réglages et boutons), nouvelle interface web à 5 onglets, watchdog MQTT, blueprints HA pour BOOST programmé, RelayPlus et relais miroir. Rupture avec la 3.x : reflasher le Wemos et, recommandé, l'Arduino Nano (EcoPV 3.6.1). Détails : https://github.com/gaetanars/MaxPV/blob/main/CHANGELOG.md"
 }

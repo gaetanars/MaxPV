@@ -84,7 +84,7 @@
 // ****************************   Définitions générales   ****************************
 // ***********************************************************************************
 
-#define VERSION          "3.60"       // Version logicielle
+#define VERSION          "3.6.1"       // Version logicielle
 #define SERIAL_BAUD      500000       // Vitesse de la liaison port série
 #define SERIALTIMEOUT       100       // Timeout pour les interrogations sur liaison série en ms
 
