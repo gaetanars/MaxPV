@@ -10,3 +10,4 @@ date | step | result
 2026-10-23 10:09 | hypothèses | relayplus.yaml : en force, passage en stop une fois la durée min atteinte (comportement 3.x, non demandé par la spec) ; assistant UI : p_offset arrondi à l'entier, ordre indx0/resetecopv/v_calib de l'ancien assistant ; UI non testée en navigateur
 2026-10-23 10:09 | revue sécurité | seul point : X-MaxPV sans authentification, statu quo P1-1
 2026-10-23 10:09 | PR | #9 existante (arrêt partiel précédent) mise à jour, marqueurs supprimés
+2026-10-23 10:19 | merge origin/main | e054059 (mqtt_pass écriture seule) : conflits MaxPV3.ino, README.md, admin.html résolus en gardant la version 4.00 (déjà couverte : mqtt_pass absent de /config et /backup, vide = conservé) ; contrat rejoué vert
