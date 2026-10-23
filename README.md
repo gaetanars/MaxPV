@@ -94,12 +94,12 @@ Le mode par défaut des sorties à la mise sous tension peut être modifié dans
 Le relais secondaire fonctionne en mode AUTO même si le SSR n'est pas en mode AUTO : le surplus PV correspond alors à la puissance exportée vers le réseau, et non à la puissance routée par le SSR.
 
 ## Mode BOOST
-Le mode BOOST déclenche le fonctionnement du SSR (résistance du chauffe-eau) pour une durée et avec une puissance réglables (entités BoostDuree et BoostRatio, onglet Routeur). Une nouvelle demande pendant un BOOST actif ré-initialise la durée. À l'arrêt du BOOST, le SSR repasse en mode AUTO. Le pilotage est de type 'burst PWM' sur une période de 5 minutes.
+Le mode BOOST déclenche le fonctionnement du SSR (résistance du chauffe-eau) pour une durée et avec une puissance réglables (entités BoostDuree et BoostRatio, onglet Routeur). Une nouvelle demande pendant un BOOST actif ré-initialise la durée. À l'arrêt du BOOST, le SSR revient au mode qu'il avait avant le BOOST. Un BOOST est refusé si le SSR est en STOP. Le pilotage est de type 'burst PWM' sur une période de 5 minutes.
 **ATTENTION** : la modification du mode du SSR est prioritaire sur le BOOST et l'arrête.
 Pour un déclenchement programmé, utilisez le blueprint `boost_programme` (voir ci-dessous).
 
 ## Limitation en température
-Si une sonde 1-Wire est installée, la température est publiée. Si la limite est activée (switch `LimiteTemperature`) et que la température dépasse la température max, le BOOST s'arrête ; un BOOST est refusé tant que la température max est atteinte. Cette limite est appliquée par le Wemos : elle est inactive pendant son redémarrage.
+Si une sonde 1-Wire est installée, la température est publiée. Si la limite est activée (switch `LimiteTemperature`) et que la température dépasse la température max, le BOOST s'arrête ; un BOOST est refusé tant que la température max est atteinte. Si la sonde est absente ou en défaut et que la limite est activée, le BOOST est refusé ou arrêté. Cette limite est appliquée par le Wemos : elle est inactive pendant son redémarrage.
 
 ## Home Assistant
 MaxPV! publie en MQTT avec autodiscovery (préfixe `homeassistant`). `<id>` = `maxpv` + identifiant de la puce ESP (visible dans l'onglet Réseau) ; base des topics : `maxpv/<id>`.

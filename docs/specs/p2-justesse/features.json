@@ -1,0 +1,125 @@
+[
+  {
+    "id": "F1",
+    "description": "P2-1 (a) : handleCommand refuse boost ON si le SSR est en STOP et qu'aucun BOOST n'est en cours (contexte ssrStop/boostActive)",
+    "criteres_acceptation": [
+      "grep -qE 'bool +ssrStop;' MaxPV3/maxpv_mqtt.h",
+      "grep -qE 'bool +boostActive;' MaxPV3/maxpv_mqtt.h",
+      "grep -qE 'ctx\\.ssrStop *=' MaxPV3/MaxPV3.ino",
+      "grep -qE 'ctx\\.boostActive *=' MaxPV3/MaxPV3.ino",
+      "grep -q 'void test_boost_ssr_stop' test/test_mqtt/test_main.cpp",
+      "grep -q 'RUN_TEST(test_boost_ssr_stop)' test/test_mqtt/test_main.cpp",
+      ".venv/bin/pio test -e native"
+    ],
+    "tests": [
+      "test_boost_ssr_stop"
+    ],
+    "passes": true
+  },
+  {
+    "id": "F2",
+    "description": "P2-1 (b) : le Nano mémorise le mode SSR au démarrage d'un BOOST et le restaure en fin de BOOST",
+    "criteres_acceptation": [
+      "grep -qE '\\bbyte +triacModeBeforeBoost\\b' EcoPV3/EcoPV3.ino",
+      "test \"$(grep -cE 'triacModeBeforeBoost *= *triacMode *;' EcoPV3/EcoPV3.ino)\" -eq 1",
+      "test \"$(grep -cE '\\btriacMode *= *triacModeBeforeBoost *;' EcoPV3/EcoPV3.ino)\" -eq 1",
+      ".venv/bin/pio ci EcoPV3/EcoPV3.ino --project-conf ci/ecopv.ini -e nano"
+    ],
+    "tests": [
+      "compilation nano"
+    ],
+    "passes": true
+  },
+  {
+    "id": "F3",
+    "description": "P2-1 : documentation (blueprint RelayPlus, README Mode BOOST)",
+    "criteres_acceptation": [
+      "grep -qF 'Un STOP manuel du relais est levé à minuit' blueprints/automation/maxpv/relayplus.yaml",
+      ".venv/bin/python -I scripts/check_blueprints.py",
+      "! grep -qF 'le SSR repasse en mode AUTO' README.md",
+      "grep -qF \"le SSR revient au mode qu'il avait avant le BOOST\" README.md",
+      "grep -qF 'Un BOOST est refusé si le SSR est en STOP.' README.md"
+    ],
+    "tests": [
+      "check_blueprints.py"
+    ],
+    "passes": true
+  },
+  {
+    "id": "F4",
+    "description": "P2-2 : limite active et température <= 0 (sonde absente ou en défaut) = BOOST refusé (handleCommand) ou arrêté (serialProcess)",
+    "criteres_acceptation": [
+      "grep -qE 'ctx\\.temp *<= *0' MaxPV3/maxpv_mqtt.h",
+      "grep -qE 'TEMP_ECS\\]\\.toInt *\\( *\\) *<= *0' MaxPV3/MaxPV3.ino",
+      "grep -q 'void test_boost_sonde_defaut' test/test_mqtt/test_main.cpp",
+      "grep -q 'RUN_TEST(test_boost_sonde_defaut)' test/test_mqtt/test_main.cpp",
+      "grep -qF 'Si la sonde est absente ou en défaut et que la limite est activée, le BOOST est refusé ou arrêté.' README.md",
+      ".venv/bin/pio test -e native",
+      ".venv/bin/pio run -e d1_mini"
+    ],
+    "tests": [
+      "test_boost_sonde_defaut",
+      "test_boost"
+    ],
+    "passes": true
+  },
+  {
+    "id": "F5",
+    "description": "P2-5 (Nano) : les messages BOOSTTIME/RELAYPLUSTIME de fin se terminent par #",
+    "criteres_acceptation": [
+      "! grep -qF 'TIME,-1,END\")' EcoPV3/EcoPV3.ino",
+      "test \"$(grep -cF 'TIME,-1,END#' EcoPV3/EcoPV3.ino)\" -eq 4",
+      ".venv/bin/pio ci EcoPV3/EcoPV3.ino --project-conf ci/ecopv.ini -e nano"
+    ],
+    "tests": [
+      "compilation nano"
+    ],
+    "passes": true
+  },
+  {
+    "id": "F6",
+    "description": "P2-6 : P_CALIB > 0 (bornes HA et UI à 0.0001, refus SETPARAM <= 0 et EEPROM <= 0 ignorée côté Nano)",
+    "criteres_acceptation": [
+      "grep -qF '\"number|P_CALIB|Calibrage puissance|p_calib|p||||c||0.0001|1|0.0001\\n\"' MaxPV3/maxpv_mqtt.h",
+      "grep -qF \"['p_calib', 'P_CALIB', 'Facteur de calibrage de la puissance', 0.0001, 1, 0.0001]\" MaxPV3/data/app.js",
+      "grep -qE 'pvrConfig\\.p_calib *> *0' EcoPV3/EcoPV3.ino",
+      "grep -qE 'valueFloat *<= *0' EcoPV3/EcoPV3.ino",
+      "grep -q 'void test_p_calib_positive' test/test_mqtt/test_main.cpp",
+      "grep -q 'RUN_TEST(test_p_calib_positive)' test/test_mqtt/test_main.cpp",
+      ".venv/bin/pio test -e native",
+      ".venv/bin/pio ci EcoPV3/EcoPV3.ino --project-conf ci/ecopv.ini -e nano"
+    ],
+    "tests": [
+      "test_p_calib_positive",
+      "test_discovery_commands_are_handled"
+    ],
+    "passes": true
+  },
+  {
+    "id": "F7",
+    "description": "Roadmap : P2-1, P2-2, P2-5 et P2-6 (côté Nano) marqués traités, ☐ limité à P3-1 et P3-7",
+    "criteres_acceptation": [
+      "grep -qE '^\\| P2-1, P2-2, P2-5 \\(côté Nano\\), P2-6 \\(côté Nano\\) \\| ✅.*p2-justesse' docs/ROADMAP.md",
+      "! grep -E '^\\|.*☐' docs/ROADMAP.md | grep -q 'P2-'",
+      "grep -qE '^\\| P3-1, P3-7 \\| ☐' docs/ROADMAP.md",
+      "test \"$(grep -cE '^### ✅ P2-(1|2) ' docs/ROADMAP.md)\" -eq 2"
+    ],
+    "tests": [
+      "grep roadmap"
+    ],
+    "passes": true
+  },
+  {
+    "id": "F8",
+    "description": "Contrat agentique vert (test, lint, build)",
+    "criteres_acceptation": [
+      ".venv/bin/python -I scripts/check_versions.py && .venv/bin/python -I scripts/check_blueprints.py && .venv/bin/pio test -e native",
+      "actionlint",
+      ".venv/bin/pio run -e d1_mini && .venv/bin/pio run -t buildfs -e d1_mini && .venv/bin/pio ci EcoPV3/EcoPV3.ino --project-conf ci/ecopv.ini -e nano"
+    ],
+    "tests": [
+      "contrat complet"
+    ],
+    "passes": true
+  }
+]

@@ -7,6 +7,8 @@ blueprint:
     force quand la durée minimale ne peut plus être atteinte avant l'heure de
     fin, puis en stop une fois la durée minimale atteinte.
 
+    Un STOP manuel du relais est levé à minuit (passage en auto) : désactivez l'automatisation pendant une intervention.
+
 
     Prérequis : un capteur `history_stats` qui mesure la durée à l'état ON de
     l'entité « État du relais » depuis minuit, en heures

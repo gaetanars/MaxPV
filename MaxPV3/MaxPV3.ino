@@ -780,7 +780,8 @@ bool serialProcess(void)
       ecoPVStats[INDEX_IMPULSION] = String((ecoPVStats[INDEX_IMPULSION].toFloat() / 1000.0), 3);
 
       // Arrêt du Boost si la température ECS est atteinte
-      if ( ( tempLimitActive == ON ) && ( ecoPVStats[TEMP_ECS].toInt() > maxTemp ) && ( boostTime > 0 ) ) boostOFF ( );
+      // ou si la sonde est absente ou en défaut (température <= 0)
+      if ( ( tempLimitActive == ON ) && ( boostTime > 0 ) && ( ( ecoPVStats[TEMP_ECS].toInt() <= 0 ) || ( ecoPVStats[TEMP_ECS].toInt() > maxTemp ) ) ) boostOFF ( );
     }
 
     else if (incomingData.startsWith(F("PARAM")))
@@ -1039,6 +1040,8 @@ static MqttCmdContext currentCmdContext(void)
   ctx.tempLimitActive = (tempLimitActive == ON);
   ctx.temp = ecoPVStats[TEMP_ECS].toDouble();
   ctx.maxTemp = maxTemp;
+  ctx.ssrStop = ( ecoPVStats[TRIAC_MODE].toInt() == STOP );
+  ctx.boostActive = ( boostTime != -1 );
   return ctx;
 }
 
