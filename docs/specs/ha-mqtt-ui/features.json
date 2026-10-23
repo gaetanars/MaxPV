@@ -8,8 +8,10 @@
       "! grep -nE 'energyIndexHistoric|relayPlus|relaisPlus|relaisDistant|remoteRelay|boostTimer|timeScheduler|MAXPV_FTP_SERVER|configTzTime|logMqtt|espTransmitInfos|INDEX_ROUTED_J|/api/|DLconfig|WARNING LOOP TIME' MaxPV3/MaxPV3.ino MaxPV3/maxpv_defines.h MaxPV3/maxpv_options.h",
       ".venv/bin/pio run -e d1_mini"
     ],
-    "tests": [],
-    "passes": false
+    "tests": [
+      "test/acceptance_ha_mqtt_ui.sh"
+    ],
+    "passes": true
   },
   {
     "id": "F2",
@@ -19,8 +21,10 @@
       "! grep -nE '\"(http_port|mqtt_active|boost_timer_[a-z]+|remoterelay_[a-z]+|RelayPlus_[a-z]+)\"' MaxPV3/MaxPV3.ino",
       ".venv/bin/pio test -e native -f test_config_size"
     ],
-    "tests": ["test/test_config_size/test_main.cpp"],
-    "passes": false
+    "tests": [
+      "test/test_config_size/test_main.cpp"
+    ],
+    "passes": true
   },
   {
     "id": "F3",
@@ -29,8 +33,10 @@
       "grep -q 'MQTT_WATCHDOG_TIMEOUT' MaxPV3/maxpv_defines.h && grep -q 'MQTT_WATCHDOG_TIMEOUT' MaxPV3/MaxPV3.ino",
       "grep -q 'watchDogWifi' MaxPV3/MaxPV3.ino && grep -q 'gatewayIP' MaxPV3/MaxPV3.ino"
     ],
-    "tests": [],
-    "passes": false
+    "tests": [
+      "test/acceptance_ha_mqtt_ui.sh"
+    ],
+    "passes": true
   },
   {
     "id": "F4",
@@ -41,8 +47,10 @@
       "grep -q 'buildStateJson' MaxPV3/MaxPV3.ino && grep -q 'buildParamsJson' MaxPV3/MaxPV3.ino",
       ".venv/bin/pio test -e native -f test_mqtt"
     ],
-    "tests": ["test/test_mqtt/test_main.cpp"],
-    "passes": false
+    "tests": [
+      "test/test_mqtt/test_main.cpp"
+    ],
+    "passes": true
   },
   {
     "id": "F5",
@@ -51,8 +59,10 @@
       "test -f MaxPV3/maxpv_mqtt.h",
       ".venv/bin/pio test -e native -f test_mqtt"
     ],
-    "tests": ["test/test_mqtt/test_main.cpp"],
-    "passes": false
+    "tests": [
+      "test/test_mqtt/test_main.cpp"
+    ],
+    "passes": true
   },
   {
     "id": "F6",
@@ -62,8 +72,11 @@
       ".venv/bin/pio test -e native -f test_mqtt",
       ".venv/bin/pio test -e native -f test_param_value"
     ],
-    "tests": ["test/test_mqtt/test_main.cpp", "test/test_param_value/test_main.cpp"],
-    "passes": false
+    "tests": [
+      "test/test_mqtt/test_main.cpp",
+      "test/test_param_value/test_main.cpp"
+    ],
+    "passes": true
   },
   {
     "id": "F7",
@@ -74,8 +87,10 @@
       "! grep -n 'redirect' MaxPV3/MaxPV3.ino",
       "grep -q 'image/x-icon' MaxPV3/MaxPV3.ino"
     ],
-    "tests": [],
-    "passes": false
+    "tests": [
+      "test/acceptance_ha_mqtt_ui.sh"
+    ],
+    "passes": true
   },
   {
     "id": "F8",
@@ -89,8 +104,10 @@
       "grep -q 'X-MaxPV' MaxPV3/data/app.js && grep -q 'confirm(' MaxPV3/data/app.js && grep -q 'Pico' MaxPV3/data/pico.min.css",
       ".venv/bin/pio run -t buildfs -e d1_mini"
     ],
-    "tests": [],
-    "passes": false
+    "tests": [
+      "test/acceptance_ha_mqtt_ui.sh"
+    ],
+    "passes": true
   },
   {
     "id": "F9",
@@ -101,8 +118,10 @@
       ".venv/bin/python -I scripts/check_versions.py && .venv/bin/python -I scripts/check_versions.py --tag v4.00",
       "! .venv/bin/python -I scripts/check_versions.py --tag v3.61"
     ],
-    "tests": [],
-    "passes": false
+    "tests": [
+      "test/acceptance_ha_mqtt_ui.sh"
+    ],
+    "passes": true
   },
   {
     "id": "F10",
@@ -113,8 +132,10 @@
       "grep -q 'buildfs' .github/workflows/build.yml && grep -q 'merge-bin' .github/workflows/build.yml",
       "grep -q 'pyyaml==6.0.2' .github/workflows/build.yml && grep -q 'check_blueprints.py' .github/workflows/build.yml"
     ],
-    "tests": [],
-    "passes": false
+    "tests": [
+      "test/acceptance_ha_mqtt_ui.sh"
+    ],
+    "passes": true
   },
   {
     "id": "F11",
@@ -123,8 +144,10 @@
       "test -f blueprints/automation/maxpv/boost_programme.yaml && test -f blueprints/automation/maxpv/relayplus.yaml && test -f blueprints/automation/maxpv/relais_miroir.yaml",
       ".venv/bin/python -I scripts/check_blueprints.py"
     ],
-    "tests": [],
-    "passes": false
+    "tests": [
+      "test/acceptance_ha_mqtt_ui.sh"
+    ],
+    "passes": true
   },
   {
     "id": "F12",
@@ -136,8 +159,10 @@
       "! grep -nE 'API_MaxPV|/api/' CLAUDE.md && grep -q 'handleCommand' CLAUDE.md && grep -q 'pio run -t buildfs -e d1_mini && ' CLAUDE.md",
       "grep -q 'ha-mqtt-ui' docs/ROADMAP.md"
     ],
-    "tests": [],
-    "passes": false
+    "tests": [
+      "test/acceptance_ha_mqtt_ui.sh"
+    ],
+    "passes": true
   },
   {
     "id": "F13",
