@@ -22,7 +22,7 @@ pio run -e d1_mini -t upload / uploadfs
 - `pio test -e native` : tests natifs sur l'hôte (Unity, ArduinoJson), dans `test/`.
 - `platformio.ini` : `src_dir=MaxPV`, `data_dir=MaxPV/data` ; toutes les libs viennent de `lib_deps`, y compris la pile async esp32async (ESPAsyncWebServer / ESPAsyncTCP) et ElegantOTA (mode async via `-DELEGANTOTA_USE_ASYNC_WEBSERVER=1`).
 - `extra_script.py` extrait `MAXPV_VERSION` de `MaxPV/maxpv_defines.h` par regex pour nommer les binaires : garder le format `#define MAXPV_VERSION "x.y.z"`.
-- CI `.github/workflows/build.yml` (actions épinglées par SHA, PlatformIO et libs en versions exactes, Dependabot mensuel) : jobs `lint` (actionlint, `check_blueprints.py` avec `pyyaml==6.0.2`), `build` (ESP + fs, tests natifs `pio test -e native`, EcoPV `nano`/`nano_oled` via `ci/ecopv.ini`, image fusionnée `MaxPV<ver>_full.bin` via `esptool merge-bin` (firmware `0x0` + filesystem `0x300000`, taille contrôlée), `pio check` non bloquant) sur push `main`/PR/dispatch ; sur tag `v*`, job `release` (contrôle des versions, release publiée + `.bin`).
+- CI `.github/workflows/build.yml` (actions épinglées par SHA, PlatformIO et libs en versions exactes, Dependabot mensuel) : jobs `lint` (actionlint, `check_blueprints.py` avec `pyyaml==6.0.3`), `build` (ESP + fs, tests natifs `pio test -e native`, EcoPV `nano`/`nano_oled` via `ci/ecopv.ini`, image fusionnée `MaxPV<ver>_full.bin` via `esptool merge-bin` (firmware `0x0` + filesystem `0x300000`, taille contrôlée), `pio check` non bloquant) sur push `main`/PR/dispatch ; sur tag `v*`, job `release` (contrôle des versions, release publiée + `.bin`).
 - Le firmware EcoPV se flashe via l'IDE Arduino (libs OneWire, DallasTemperature, SSD1306Ascii optionnelle pour l'écran oLed).
 
 ## Architecture
@@ -58,5 +58,5 @@ MaxPV! (`MAXPV_VERSION` / `MAXPV_VERSION_FULL` dans `maxpv_defines.h`), site Web
 - contraintes :
   - aucun push de tag, aucun changement des réglages GitHub du dépôt ;
   - `Librairies IDE/` et les sources des sketches (`*.ino`, `*.h`) ne sont modifiés que s'ils sont explicitement listés dans la SPEC en cours ;
-  - `.venv/` (PlatformIO 6.2.0 et PyYAML 6.0.2 épinglés, mêmes versions que la CI) et `CLAUDE.local.md` restent hors git (`.git/info/exclude`) ;
+  - `.venv/` (PlatformIO 6.2.0 et PyYAML 6.0.3 épinglés, mêmes versions que la CI) et `CLAUDE.local.md` restent hors git (`.git/info/exclude`) ;
   - validation finale d'un changement de CI = runs GitHub Actions verts sur la PR.

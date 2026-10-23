@@ -37,7 +37,7 @@ jobs:
           python-version: '3.13'
       - name: Check blueprints
         run: |
-          python3 -m pip install pyyaml==6.0.2
+          python3 -m pip install pyyaml==6.0.3
           python3 -I scripts/check_blueprints.py
 
   build:
