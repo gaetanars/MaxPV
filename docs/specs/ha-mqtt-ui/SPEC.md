@@ -109,6 +109,7 @@ Restent inchangés : `TickerScheduler`, la lib `akajes/AsyncPing(esp8266)`, Eleg
 - Réglages ESP : bornes de R2, mise à jour de la variable, `shouldSaveConfig = true`, republication de `/params`.
 - Buttons : payload `PRESS` → action correspondante. `RedemarrerESP` passe par `shouldReboot`.
 - Uniquement si `fromHttp` vaut true : `format` (`formatEepromEcoPV`) et `eraseconfigesp` (payload `PRESS`). Ils ne sont jamais acceptés en MQTT.
+- Une valeur numérique hors bornes dans une commande (MQTT ou `POST /cmd`) est rejetée, jamais ramenée aux bornes (décision utilisateur) ; seul `POST /config` applique le clamp de R2.
 - Tout autre cas : ignoré en MQTT, 400 en HTTP. La limite de température locale reste : arrêt du BOOST dans `serialProcess` si `temp_limit` est actif et `temp > max_temp`.
 
 ### R7 Backend HTTP interne (remplace l'API)
@@ -132,6 +133,7 @@ Tout `POST` exige l'en-tête `X-MaxPV`, sinon 403 (`checkMutationHeader` existan
   - `maxpv.css` (surcharges légères) ;
   - `favicon.ico` ;
   - `versionweb.txt`.
+  `pico.min.css` est déjà présent dans `MaxPV3/data/` (téléchargé depuis jsdelivr, SHA-256 `fbc9a63fc9fc9f72d12fd7fc9806e11fa9f77ae4f9cad146b27003a1119ba3db`, 83319 octets) : ne pas le modifier, noter ce SHA dans le README.
   Supprimés : `admin.html`, `configuration.html`, `credits.html`, `graph.html`, `main.html`, `maj.html`, `wizard.html`. Aucune ressource externe (script, feuille de style, police) ; le mode sombre automatique de Pico est conservé.
 - Navigation par ancre (`#etat`, `#routeur`, `#reseau`, `#etalonnage`, `#systeme`), un `<section id="tab-…">` par onglet, un seul visible à la fois. L'en-tête affiche l'état Nano, l'état MQTT et la version.
 - **État** : rafraîchi toutes les 5 s via `GET /status`. Puissances, température, index, état du relais, RSSI, uptime. Sélecteurs SSR et relais (stop/force/auto) et bouton BOOST via `POST /cmd`.
