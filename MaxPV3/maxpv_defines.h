@@ -37,6 +37,8 @@
 // Communication série entre l'arduino et l'ESP 8266
 #define SERIAL_BAUD     500000 // Vitesse de la liaison port série pour la connexion avec l'arduino
 #define SERIALTIMEOUT   100    // Timeout pour les interrogations sur liaison série en ms
+#define NANO_BOOT_TIMEOUT 2000 // Délai max en ms de chaque attente du Nano au démarrage
+#define WIFI_PORTAL_TIMEOUT 300 // Durée max en s du portail Wifi si un réseau est mémorisé
 #define SERIAL_BUFFER   256    // Taille du buffer RX pour la connexion avec l'arduino (256 max)
 #define END_OF_TRANSMIT '#'    // Caractère de fin de transmission de l'Arduino
 

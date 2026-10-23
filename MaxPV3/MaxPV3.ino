@@ -318,7 +318,13 @@ AsyncWiFiManager  wifiManager(&webServer, &dnsServer);
   else logSerial ( F("[ESP]"), F("Adresse IP par DHCP") );
   delay(5);
 
-  wifiManager.autoConnect(SSID_CP);
+  // Réseau mémorisé : le portail est borné, puis redémarrage et nouvelle tentative
+  if (WiFi.SSID().length() > 0) wifiManager.setConfigPortalTimeout(WIFI_PORTAL_TIMEOUT);
+  if (!wifiManager.autoConnect(SSID_CP)) {
+    logSerial ( F("[ESP]"), F("Échec de connexion Wifi, redémarrage") );
+    delay(500);
+    ESP.restart();
+  }
   delay(500);
 
   msg = F("Connecté avec l'IP ");
@@ -367,18 +373,21 @@ AsyncWiFiManager  wifiManager(&webServer, &dnsServer);
     clearSerialInputCache();
     getAllParamEcoPV();
     delay(50);
-    while (!serialProcess()) { delay (10); }
+    refTime = millis();
+    while (!serialProcess() && ((millis()-refTime) <= NANO_BOOT_TIMEOUT)) { delay (10); }
     delay(5);
     clearSerialInputCache();
     delay(5);
     getVersionEcoPV();
     delay(50);
-    while (!serialProcess()) { delay (10); }
+    refTime = millis();
+    while (!serialProcess() && ((millis()-refTime) <= NANO_BOOT_TIMEOUT)) { delay (10); }
     delay(5);
     clearSerialInputCache();
     // Récupération des informations de fonctionnement
     // En moins d'une seconde EcoPV devrait envoyer les informations
-    while (!serialProcess()) { delay (10); }
+    refTime = millis();
+    while (!serialProcess() && ((millis()-refTime) <= NANO_BOOT_TIMEOUT)) { delay (10); }
     delay(5);
   }
 
@@ -617,9 +626,23 @@ void configWrite(void)
     return;
   }
 
-  File configFile = LittleFS.open(F("/config.json"), "w");
-  serializeJson(jsonConfig, configFile);
+  // Écriture dans un fichier temporaire puis rename atomique : config.json reste intact en cas de coupure
+  File configFile = LittleFS.open(F("/config.tmp"), "w");
+  if (!configFile) {
+    logSerial ( F("[ESP]"), F("Ouverture de config.tmp impossible, configuration non sauvegardée") );
+    return;
+  }
+  size_t written = serializeJson(jsonConfig, configFile);
   configFile.close();
+  if (written == 0) {
+    LittleFS.remove(F("/config.tmp"));
+    logSerial ( F("[ESP]"), F("Écriture de config.tmp échouée, configuration non sauvegardée") );
+    return;
+  }
+  if (!LittleFS.rename(F("/config.tmp"), F("/config.json"))) {
+    LittleFS.remove(F("/config.tmp"));
+    logSerial ( F("[ESP]"), F("Renommage de config.tmp échoué, configuration non sauvegardée") );
+  }
 }
 
 
