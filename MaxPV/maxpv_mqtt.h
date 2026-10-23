@@ -225,7 +225,7 @@ inline size_t mqttDiscoveryPayload(char *buf, size_t size, size_t i, const char 
 
   mqttPutP(w, PSTR("{\"dev\":{\"ids\":\""));
   mqttPut(w, id);
-  mqttPutP(w, PSTR("\",\"name\":\"MaxPV\",\"mdl\":\"MaxPV!\",\"mf\":\"JetBlack\",\"sw\":\""));
+  mqttPutP(w, PSTR("\",\"name\":\"MaxPV\",\"mdl\":\"MaxPV!\",\"mf\":\"gaetanars\",\"sw\":\""));
   mqttPutP(w, PSTR(MAXPV_VERSION));
   mqttPutP(w, PSTR("\",\"cu\":\"http://"));
   mqttPut(w, ip);
