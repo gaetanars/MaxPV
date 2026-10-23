@@ -39,7 +39,7 @@ pio run -e d1_mini -t upload / uploadfs
 MaxPV! (`MAXPV_VERSION` / `MAXPV_VERSION_FULL` dans `maxpv_defines.h`), site Web (`MaxPV3/data/versionweb.txt`), EcoPV (`#define VERSION` dans `EcoPV3.ino:87`). Une release met à jour :
 - le fichier `latest` à la racine (JSON `ecopvver`/`maxpvver`/`webver`/`whatsnew`), lu par `main.html` via raw.githubusercontent.com (dépôt `gaetanars/MaxPV`, branche `main`) pour signaler une mise à jour ; `whatsnew` est affiché en texte brut ;
 - `CHANGELOG.md` (entrée datée, avec les trois numéros) ;
-- le tag `v<MAXPV_VERSION>` (ex. `v4.0.0`) : la CI vérifie la cohérence avec `scripts/check_versions.py`, puis publie la release avec les `.bin` versionnés et les assets à noms fixes `MaxPV3_firmware.bin` / `MaxPV3_filesystem.bin` (OTA) et `MaxPV3_full.bin` (installation initiale USB à `0x0`, utilisée par le README). Aucun binaire n'est commité.
+- le tag `v<MAXPV_VERSION>` (ex. `v4.0.0`) : la CI vérifie la cohérence avec `scripts/check_versions.py`, puis publie la release avec les `.bin` versionnés et les assets à noms fixes `MaxPV_firmware.bin` / `MaxPV_filesystem.bin` (OTA) et `MaxPV_full.bin` (installation initiale USB à `0x0`, utilisée par le README). Aucun binaire n'est commité.
 
 ## Points d'attention
 

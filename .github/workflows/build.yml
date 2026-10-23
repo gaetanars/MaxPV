@@ -112,9 +112,9 @@ jobs:
       - name: Prepare fixed-name assets
         working-directory: dist
         run: |
-          cp MaxPV*_firmware.bin MaxPV3_firmware.bin
-          cp MaxPV*_filesystem.bin MaxPV3_filesystem.bin
-          cp MaxPV*_full.bin MaxPV3_full.bin
+          cp MaxPV[0-9]*_firmware.bin MaxPV_firmware.bin
+          cp MaxPV[0-9]*_filesystem.bin MaxPV_filesystem.bin
+          cp MaxPV[0-9]*_full.bin MaxPV_full.bin
           ls -l
           test "$(find . -maxdepth 1 -name "*.bin" | wc -l)" -eq 6
       - name: Publish release
