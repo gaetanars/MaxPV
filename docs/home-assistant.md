@@ -2,14 +2,14 @@
 
 MaxPV! publie en MQTT avec autodiscovery (préfixe `homeassistant`). Renseignez l'hôte du broker dans l'onglet **Réseau** de l'interface web : l'appareil MaxPV apparaît ensuite dans Home Assistant.
 
-<!-- ![Appareil MaxPV dans Home Assistant](../images/ha-appareil.png) -->
+![Appareil MaxPV dans Home Assistant](../images/ha-appareil.png)
 
 ## Topics
 
 `<id>` = `maxpv` + identifiant de la puce ESP (visible dans l'onglet Réseau). Base : `maxpv/<id>`.
 
 | Topic | Contenu |
-|---|---|
+| --- | --- |
 | `maxpv/<id>/status` | Disponibilité `online`/`offline` (retain, LWT). |
 | `maxpv/<id>/state` | JSON retain de l'état (mesures, index, modes, états, diagnostics), publié toutes les `mqtt_period` secondes et après chaque commande de mode ou de BOOST. |
 | `maxpv/<id>/params` | JSON retain des 16 paramètres EcoPV et des réglages ESP. |
@@ -22,7 +22,7 @@ Commandes : `triac_mode` et `relay_mode` (`stop`/`force`/`auto`), `boost` (`ON`/
 Les 18 identifiants uniques historiques sont conservés : Home Assistant garde les entités et leur historique.
 
 | Type | Entités |
-|---|---|
+| --- | --- |
 | Capteurs de mesure (10) | `Tension`, `Courant`, `PuissanceApparente`, `FacteurPuissance`, `PuissanceActive`, `PuissanceRoutee`, `PuissanceImportee`, `PuissanceExportee`, `PuissanceProduite`, `Temperature` |
 | Capteurs d'énergie (5) | `EnergieRoutee`, `EnergieImportee`, `EnergieExportee`, `EnergieProduite`, `TempsFonctionnementRelais` |
 | Diagnostics (12) | `RSSI`, `Uptime`, `VersionEcoPV`, puis désactivés par défaut : `MemoireLibre`, `RaisonReset`, `DelayMin`, `DelayAvg`, `DelayMax`, `BiasOffset`, `StatusByte`, `OnTime`, `Samples` |
@@ -47,7 +47,7 @@ Les index journaliers et l'historique ne sont plus calculés par le Wemos. Utili
 Dans [`blueprints/automation/maxpv/`](../blueprints/automation/maxpv/) :
 
 | Blueprint | Rôle | Import |
-|---|---|---|
+| --- | --- | --- |
 | `boost_programme.yaml` | BOOST à heure fixe, jours au choix | [![Importer](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Fgaetanars%2FMaxPV%2Fblob%2Fmain%2Fblueprints%2Fautomation%2Fmaxpv%2Fboost_programme.yaml) |
 | `relayplus.yaml` | Durées min et max du relais (capteur `history_stats` décrit dans le blueprint) | [![Importer](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Fgaetanars%2FMaxPV%2Fblob%2Fmain%2Fblueprints%2Fautomation%2Fmaxpv%2Frelayplus.yaml) |
 | `relais_miroir.yaml` | Recopie de l'état du relais sur un interrupteur distant | [![Importer](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Fgaetanars%2FMaxPV%2Fblob%2Fmain%2Fblueprints%2Fautomation%2Fmaxpv%2Frelais_miroir.yaml) |
