@@ -34,10 +34,3 @@
 
 # Platformio
 .pio
-
-#VSCode
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/extensions.json
-!.vscode/*.code-snippets
