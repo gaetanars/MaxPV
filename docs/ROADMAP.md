@@ -20,7 +20,7 @@ Légende des priorités :
 |---|---|---|
 | P0-1, CI-1 à CI-9 | ✅ traités | `47a23c3` (spec `ci-hardening`, run PR vert) |
 | CI-8 (b) | ✅ assets à noms fixes, README sur `releases/latest/download/`, `Binaires MaxPV/` supprimé | `47a23c3` |
-| P3-6 | ◐ partiel : AsyncElegantOTA, `Librairies IDE/` et libs khoih-prog remplacés ; `NTPClient` toujours déclaré (`platformio.ini:29`) | `e29ccc7`, `8fc50b2`, `2530e2f` (spec `elegantota-v4`, CI verte) |
+| P3-6 | ✅ AsyncElegantOTA, `Librairies IDE/` et libs khoih-prog remplacés ; `NTPClient` retiré (spec `ha-mqtt-ui`) | `e29ccc7`, `8fc50b2`, `2530e2f` (spec `elegantota-v4`, CI verte) |
 | P0-2 | ✅ `configBounded()` borne les 12 champs numériques de `configRead()` sur les min/max d'`admin.html` (clamp, correction réécrite dans `config.json`). Test fonctionnel sur appareil à faire (`mqtt_period` = 0 via `/api/set`) | `9c4d5d6` (spec `bornes-config`, PR #4, CI verte) |
 | P0-3 | ✅ `JSON_CONFIG_SIZE` = 2048 (suffisant : 1691 o utilisés en lecture, 1320 o en écriture sur hôte 64 bits) ; `configWrite()` n'écrit pas un document en débordement ; échec de lecture remonté en HTTP 400 ; test natif `pio test -e native` en CI | spec `config-json-post`, PR #5 mergée (`95d5cb0`, CI verte) |
 | P0-4 | ✅ config envoyée en `POST /api/set` (corps form-urlencoded via `URLSearchParams`), GET `configmaxpv` retiré ; P1-9 réglé pour `admin.html` (reboot chaîné au succès de la sauvegarde) | spec `config-json-post`, PR #5 mergée (`95d5cb0`, CI verte) |
@@ -32,7 +32,7 @@ Légende des priorités :
 | P1-1 | ✅ décision (c) statu quo, documentée (`README.md:87`) | |
 | P1-6, P1-7, P1-8 | ✅ attentes du Nano au boot bornées (`NANO_BOOT_TIMEOUT`), timeout du portail Wifi si un réseau est mémorisé puis redémarrage (`WIFI_PORTAL_TIMEOUT`), `configWrite` via `/config.tmp` + `rename` atomique ; test sur matériel à faire | spec `p1-robustesse` |
 | P2-1, P2-2, P2-5 (côté Nano), P2-6 (côté Nano) | ✅ BOOST refusé si le SSR est en STOP, mode SSR restauré en fin de BOOST, BOOST refusé ou arrêté si la sonde est en défaut (limite active), `#` ajouté aux messages `BOOSTTIME`/`RELAYPLUSTIME`, `P_CALIB` > 0 ; RelayPlus traité par documentation ; test sur matériel à faire | spec `p2-justesse` |
-| P3-1, P3-7 | ☐ non traités | |
+| P3-1, P3-7 | ✅ P3-1 : partie ESP rendue obsolète par la 4.00, branche en double retirée de `EcoPV3.ino` ; P3-7 : choix de conception documenté (README « Watchdogs », commentaires `EcoPV3.ino`), sans watchdog matériel, sauvegarde horaire conservée | spec `p3-qualite` |
 | Nouveautés 4.00 | ✅ Home Assistant via MQTT (autodiscovery de 59 entités, `maxpv_mqtt.h` testé en natif), UI à 5 onglets (Pico CSS, JS vanilla, sans ressource externe), backend HTTP interne (`/status`, `/params`, `/config`, `/cmd`, `/backup`), blueprints HA (BOOST programmé, RelayPlus, relais miroir) contrôlés par `check_blueprints.py`, CI sans FTP, doc API PDF supprimée | PR #9 (`7f44c0c`) |
 
 Notes de livraison :
@@ -172,13 +172,13 @@ Notes de livraison :
 
 ## P3 : qualité et maintenance
 
-- **P3-1** Code mort ou trompeur : variables locales qui masquent les globales `maxTemp`/`tempLimitActive` dans `timeScheduler()` (`MaxPV3.ino:1392-1394`) ; branche dupliquée `EcoPV3.ino:813-814`.
+- **P3-1** ✅ Code mort ou trompeur : variables locales qui masquent les globales `maxTemp`/`tempLimitActive` dans `timeScheduler()` (`MaxPV3.ino:1392-1394`) ; branche dupliquée `EcoPV3.ino:813-814`.
 - **P3-2** ✅ Log `[WARNING LOOP TIME]` (`MaxPV3.ino:604`) publié en retain à chaque boucle de plus de 100 ms : bruit MQTT. Ajouter un seuil ou un rate-limit.
 - **P3-3** ✅ Frontend dépendant d'Internet : Bootstrap et Highcharts viennent de CDN, sans LAN isolé il n'y a plus d'UI. Highcharts n'a pas d'attribut SRI (`graph.html:188-194`). Ajouter le SRI, au minimum.
 - **P3-4** ✅ (traité, `textContent`) `whatsnew` du fichier `latest` injecté en `innerHTML` (`main.html:172,180`) : le contenu distant s'exécute avec les droits de l'UI locale, donc avec accès à l'API sans auth. Après P0-5, le risque se limite à une compromission de mon propre dépôt. Utiliser `textContent` ou une liste blanche.
 - **P3-5** ✅ Assistant : le bouton « Commencer » remet les index d'énergie à zéro (`wizard.html:125`) sans confirmation.
-- **P3-6** ◐ (reste `NTPClient`) Dépendances : `AsyncElegantOTA` est déprécié (remplacé par ElegantOTA v3 en mode async) ; les libs khoih-prog sont archivées ; `NTPClient` est déclaré mais inutilisé (`platformio.ini:28`, l'heure passe par `configTzTime`).
-- **P3-7** Nano sans watchdog matériel (`wdt_enable`). Index sauvegardés une fois par heure (`EcoPV3.ino:1343`) : jusqu'à 1 h de comptage perdu sur coupure. Choix de conception, à documenter.
+- **P3-6** ✅ Dépendances : `AsyncElegantOTA` est déprécié (remplacé par ElegantOTA v3 en mode async) ; les libs khoih-prog sont archivées ; `NTPClient` est déclaré mais inutilisé (`platformio.ini:28`, l'heure passe par `configTzTime`).
+- **P3-7** ✅ Nano sans watchdog matériel (`wdt_enable`). Index sauvegardés une fois par heure (`EcoPV3.ino:1343`) : jusqu'à 1 h de comptage perdu sur coupure. Choix de conception, à documenter.
 - **P3-8** ✅ Doc API en PDF binaire (`Documentation API/API_MaxPV.pdf`) : impossible de suivre ses changements avec git. Envisager une version Markdown.
 - **P3-9** ✅ `favicon.ico` servi en `image/png` (`MaxPV3.ino:2035`) ; `onNotFound` redirige vers `/` au lieu de renvoyer 404, ce qui gêne les clients de l'API.
 
@@ -230,5 +230,6 @@ Notes de livraison :
 - **P2-1** : (a) + (b). Pas de BOOST ni d'init RelayPlus si le mode est STOP ; fin de BOOST = retour au mode mémorisé. RelayPlus (blueprint) traité par documentation : le STOP manuel levé à minuit est signalé dans la description du blueprint.
 - **P2-2** : limite de température active et sonde en défaut (-99) : refuser ou arrêter le BOOST, avec log.
 - **CI-8** : (b). La CI attache les assets à noms fixes à la release ; le README pointe vers `releases/latest/download/...` ; `Binaires MaxPV/` est retiré du dépôt ensuite (après CI-1).
+- **P3-7** : documenté, pas de watchdog matériel sur le Nano ; sauvegarde horaire des index conservée (usure EEPROM).
 
 Périmètre : ce fork (gaetanars/MaxPV) est autonome. Pas de PR amont, pas de compatibilité imposée avec Jetblack31/MaxPV. Les ruptures d'API (P1-1, P1-2) ne concernent que mes propres intégrations.

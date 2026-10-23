@@ -497,6 +497,7 @@ SSD1306AsciiAvrI2c      oled;
 // Routine d'initialisation générale                   //
 /////////////////////////////////////////////////////////
 void setup ( ) {
+  // Pas de watchdog matériel (wdt_enable) : choix de conception, voir README (Watchdogs).
 
   // Initialisation des pins
   pinMode      ( pulseExternalPin, INPUT_PULLUP );  // Entrée de comptage impulsion externe
@@ -811,7 +812,6 @@ void loop ( ) {
     else if ( stats_error_status <= B00000011 ) Serial.print ( F("000000") );
     else if ( stats_error_status <= B00000111 ) Serial.print ( F("00000") );
     else if ( stats_error_status <= B00001111 ) Serial.print ( F("0000") );
-    else if ( stats_error_status <= B00011111 ) Serial.print ( F("000") );
     else if ( stats_error_status <= B00011111 ) Serial.print ( F("000") );
     else if ( stats_error_status <= B00111111 ) Serial.print ( F("00") );
     else if ( stats_error_status <= B01111111 ) Serial.print ( F("0") );
@@ -1344,6 +1344,8 @@ void PVRScheduler ( void ) {
   unsigned long         deltaTimeImpulsion_tmp = 0;
 
   //*** Toutes les heures : Enregistrement des index en mémoire EEPROM  ***
+  // Choix de conception : une coupure secteur perd jusqu'à 1 h de comptage.
+  // Une période plus courte userait l'EEPROM (environ 100 000 écritures par octet).
   if ( ( minutesOnline == 0 ) && ( secondsOnline == 0 ) ) indexWrite ( );
 
   // *** Affichage des donnéees statistiques sur écran oled si activé   ***

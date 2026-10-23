@@ -1,0 +1,50 @@
+[
+  {
+    "id": "F1",
+    "description": "P3-1 : suppression de la branche en double de la cascade stats_error_status dans EcoPV3.ino",
+    "criteres_acceptation": [
+      "grep -c 'stats_error_status <= B00011111' EcoPV3/EcoPV3.ino renvoie 1",
+      "! grep -q 'timeScheduler' MaxPV3/MaxPV3.ino",
+      ".venv/bin/pio ci EcoPV3/EcoPV3.ino --project-conf ci/ecopv.ini -e nano réussit (via Docker en local, cf. CLAUDE.local.md)"
+    ],
+    "tests": [],
+    "passes": false
+  },
+  {
+    "id": "F2",
+    "description": "P3-7 : choix de conception documenté (pas de watchdog matériel Nano, sauvegarde horaire des index) dans EcoPV3.ino et README",
+    "criteres_acceptation": [
+      "grep -q 'Pas de watchdog matériel (wdt_enable) : choix de conception, voir README (Watchdogs).' EcoPV3/EcoPV3.ino",
+      "grep -q \"Choix de conception : une coupure secteur perd jusqu'à 1 h de comptage.\" EcoPV3/EcoPV3.ino",
+      "! grep -q 'wdt_enable *(' EcoPV3/EcoPV3.ino",
+      "grep -q '^\\* \\*\\*Arduino Nano\\*\\* : pas de watchdog matériel' README.md",
+      "awk '/^## Watchdogs/{f=1} /^## Migration/{f=0} f' README.md | grep -q 'Arduino Nano'"
+    ],
+    "tests": [],
+    "passes": false
+  },
+  {
+    "id": "F3",
+    "description": "Roadmap close : P3-1, P3-6 et P3-7 marqués traités, plus aucun item ouvert",
+    "criteres_acceptation": [
+      "! grep -q '☐' docs/ROADMAP.md",
+      "! grep -q '◐' docs/ROADMAP.md",
+      "grep -q 'spec `p3-qualite`' docs/ROADMAP.md",
+      "grep -q '^- \\*\\*P3-7\\*\\* : documenté' docs/ROADMAP.md"
+    ],
+    "tests": [],
+    "passes": false
+  },
+  {
+    "id": "F4",
+    "description": "Périmètre et contrat respectés",
+    "criteres_acceptation": [
+      "git diff --name-only main... | grep -v '^docs/specs/p3-qualite/' ne liste que EcoPV3/EcoPV3.ino, README.md et docs/ROADMAP.md",
+      "commande test du contrat agentique réussit",
+      "commande lint du contrat agentique (actionlint) réussit",
+      "commande build du contrat agentique réussit (via Docker en local, cf. CLAUDE.local.md)"
+    ],
+    "tests": [],
+    "passes": false
+  }
+]
