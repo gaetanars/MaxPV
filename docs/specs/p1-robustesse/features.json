@@ -1,0 +1,74 @@
+[
+  {
+    "id": "F1",
+    "description": "P1-6 : attentes du Nano au boot bornées par NANO_BOOT_TIMEOUT (2000 ms)",
+    "criteres_acceptation": [
+      "grep -qE '^#define NANO_BOOT_TIMEOUT +2000\\b' MaxPV3/maxpv_defines.h",
+      "! grep -qE 'while *\\( *! *serialProcess *\\( *\\) *\\)' MaxPV3/MaxPV3.ino",
+      "test \"$(grep -c 'NANO_BOOT_TIMEOUT' MaxPV3/MaxPV3.ino)\" -ge 1",
+      ".venv/bin/pio run -e d1_mini"
+    ],
+    "tests": [
+      "critères grep + build ci"
+    ],
+    "passes": true
+  },
+  {
+    "id": "F2",
+    "description": "P1-7 : timeout du portail Wifi (300 s) si un réseau est mémorisé, redémarrage si autoConnect échoue",
+    "criteres_acceptation": [
+      "grep -qE '^#define WIFI_PORTAL_TIMEOUT +300\\b' MaxPV3/maxpv_defines.h",
+      "grep -qE 'setConfigPortalTimeout *\\( *WIFI_PORTAL_TIMEOUT *\\)' MaxPV3/MaxPV3.ino",
+      "grep -qE 'WiFi\\.SSID *\\( *\\)' MaxPV3/MaxPV3.ino",
+      "grep -qE 'if *\\( *! *wifiManager\\.autoConnect *\\( *SSID_CP *\\) *\\)' MaxPV3/MaxPV3.ino",
+      ".venv/bin/pio run -e d1_mini"
+    ],
+    "tests": [
+      "critères grep + build ci"
+    ],
+    "passes": true
+  },
+  {
+    "id": "F3",
+    "description": "P1-8 : configWrite écrit /config.tmp puis le renomme en /config.json ; échec = temporaire supprimé, config.json intact",
+    "criteres_acceptation": [
+      "! grep -qE 'LittleFS\\.open *\\( *F\\( *\"/config\\.json\" *\\) *, *\"w\" *\\)' MaxPV3/MaxPV3.ino",
+      "grep -qE 'LittleFS\\.open *\\( *F\\( *\"/config\\.tmp\" *\\) *, *\"w\" *\\)' MaxPV3/MaxPV3.ino",
+      "grep -qE 'LittleFS\\.rename *\\( *F?\\(? *\"/config\\.tmp\" *\\)? *, *F?\\(? *\"/config\\.json\"' MaxPV3/MaxPV3.ino",
+      "grep -qE 'LittleFS\\.remove *\\( *F\\( *\"/config\\.tmp\" *\\) *\\)' MaxPV3/MaxPV3.ino",
+      "grep -qF 'overflowed()' MaxPV3/MaxPV3.ino",
+      ".venv/bin/pio run -e d1_mini"
+    ],
+    "tests": [
+      "critères grep + build ci"
+    ],
+    "passes": true
+  },
+  {
+    "id": "F4",
+    "description": "Roadmap : P1-1, P1-6, P1-7 et P1-8 marqués traités",
+    "criteres_acceptation": [
+      "grep -qE '^\\| P1-1 \\| ✅' docs/ROADMAP.md",
+      "grep -qE '^\\| P1-6, P1-7, P1-8 \\| ✅.*p1-robustesse' docs/ROADMAP.md",
+      "! grep -E '^\\|.*☐' docs/ROADMAP.md | grep -q 'P1-'",
+      "test \"$(grep -cE '^### ✅ P1-(1|6|7|8) ' docs/ROADMAP.md)\" -eq 4"
+    ],
+    "tests": [
+      "critères grep + build ci"
+    ],
+    "passes": true
+  },
+  {
+    "id": "F5",
+    "description": "Contrat agentique vert (test, lint, build)",
+    "criteres_acceptation": [
+      ".venv/bin/python -I scripts/check_versions.py && .venv/bin/python -I scripts/check_blueprints.py && .venv/bin/pio test -e native",
+      "actionlint",
+      ".venv/bin/pio run -e d1_mini && .venv/bin/pio run -t buildfs -e d1_mini && .venv/bin/pio ci EcoPV3/EcoPV3.ino --project-conf ci/ecopv.ini -e nano"
+    ],
+    "tests": [
+      "check_versions, check_blueprints, pio test native, actionlint, builds d1_mini/buildfs/nano"
+    ],
+    "passes": true
+  }
+]

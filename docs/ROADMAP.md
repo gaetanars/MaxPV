@@ -29,7 +29,9 @@ Légende des priorités :
 | P1-9, P3-4 | ✅ réglés en marge : reboot chaîné au succès de la sauvegarde (`admin.html:62-67`) ; `whatsnew` affiché via `textContent` (`main.html:175`) | PR #5, PR #3 |
 | P1-3, P2-8 | ✅ `mqtt_pass` retiré de `/api/get?configmaxpv` et `/DLconfig` (`sendConfig`), vide/absent = conservé, `mqtt_user` vide = effacé ; test sur appareil à faire | `c1ea113` (PR #8, branche `fix/mqtt-pass-masque`) |
 | P1-5, P2-3, P2-4, P2-5 (côté ESP), P2-6 et P2-7 (côté UI), P2-9, P3-2, P3-3, P3-5, P3-6, P3-8, P3-9 | ✅ traités ou rendus obsolètes (MaxPV! 4.00 : lecture du payload sur `len`, historique, index journaliers, planificateur, NTP et ancienne API supprimés, topics `maxpv/<id>`, `NTPClient` retiré) | spec `ha-mqtt-ui` (PR #9 mergée, `7f44c0c`, CI de la PR verte ; run `main` en cours, test sur matériel et UI en navigateur à faire) |
-| P1-6 à P1-8, P2-1, P2-2, P3-1, P3-7 | ☐ non traités (`EcoPV3.ino` intact) | |
+| P1-1 | ✅ décision (c) statu quo, documentée (`README.md:87`) | |
+| P1-6, P1-7, P1-8 | ✅ attentes du Nano au boot bornées (`NANO_BOOT_TIMEOUT`), timeout du portail Wifi si un réseau est mémorisé puis redémarrage (`WIFI_PORTAL_TIMEOUT`), `configWrite` via `/config.tmp` + `rename` atomique ; test sur matériel à faire | spec `p1-robustesse` |
+| P2-1, P2-2, P3-1, P3-7 | ☐ non traités (`EcoPV3.ino` intact) | |
 | Nouveautés 4.00 | ✅ Home Assistant via MQTT (autodiscovery de 59 entités, `maxpv_mqtt.h` testé en natif), UI à 5 onglets (Pico CSS, JS vanilla, sans ressource externe), backend HTTP interne (`/status`, `/params`, `/config`, `/cmd`, `/backup`), blueprints HA (BOOST programmé, RelayPlus, relais miroir) contrôlés par `check_blueprints.py`, CI sans FTP, doc API PDF supprimée | PR #9 (`7f44c0c`) |
 
 Notes de livraison :
@@ -78,7 +80,7 @@ Notes de livraison :
 
 ## P1 : sécurité et robustesse
 
-### P1-1 Aucune authentification : UI, API, OTA (confirmé, M) — décision requise
+### ✅ P1-1 Aucune authentification : UI, API, OTA (confirmé, M) — décision (c) statu quo
 - `/update` (AsyncElegantOTA, `MaxPV3.ino:1932-1933`) ne demande pas d'identifiants : n'importe qui sur le LAN peut flasher un firmware.
 - `/api/action` permet `format` (EEPROM Nano), `resetindex`, `eraseconfigesp` et `rebootesp` sans contrôle (`:2050-2075`).
 - `/api/set` modifie les paramètres de régulation et la config (`:2135-2172`).
@@ -104,15 +106,15 @@ Notes de livraison :
 - `:1763-1784` construit `String(payload)` alors que le payload AsyncMqttClient n'est pas terminé par un NUL (`len` est fourni). Lecture hors buffer : comportement indéfini, crash possible.
 - Proposition : comparer avec `strncmp(payload, "...", len)` ou construire la `String` sur `len` octets.
 
-### P1-6 Boot ESP bloqué indéfiniment (confirmé, S)
+### ✅ P1-6 Boot ESP bloqué indéfiniment (confirmé, S)
 - `setup()` `:444,450,455` : `while (!serialProcess())` sans timeout. Si le Nano se tait après le premier contact (`fatalError()` bloque environ 20 s ; `startPVR()` attend sans fin les passages à zéro, `EcoPV3.ino:931-933`), l'ESP ne démarre jamais le serveur web.
 - Proposition : timeout de quelques secondes sur chaque attente.
 
-### P1-7 Portail Wifi sans timeout après une coupure secteur (à vérifier, S)
+### ✅ P1-7 Portail Wifi sans timeout après une coupure secteur (à vérifier, S)
 - `wifiManager.autoConnect(SSID_CP)` (`:368`) n'a pas de `setConfigPortalTimeout`. Si la box redémarre moins vite que l'ESP, celui-ci peut rester en portail AP ouvert (SSID « MaxPV » sans mot de passe) au lieu de réessayer.
 - Proposition : `setConfigPortalTimeout(180)` puis `ESP.restart()` quand une config existe. À valider en coupant la box.
 
-### P1-8 Écriture de config non atomique (confirmé, S)
+### ✅ P1-8 Écriture de config non atomique (confirmé, S)
 - `configWrite()` (`:753-755`) écrase `config.json` sur place. Une coupure pendant l'écriture laisse un fichier corrompu ; au boot suivant, P0-3 s'applique (effacement et mode AP).
 - Proposition : écrire `config.tmp`, puis `rename`.
 
