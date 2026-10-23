@@ -9,3 +9,4 @@ date | step | result
 2026-10-23 10:09 | workflow livrer-large | ok, 8 agents, séquentiel, 0 boucle de correction, 0 conflit ; contrat rejoué à la main : versions, blueprints, actionlint, 3 builds Docker arm64, 24 tests natifs, acceptation 0 échec, EcoPV3.ino intact ; F13 en attente des runs CI de la PR
 2026-10-23 10:09 | hypothèses | relayplus.yaml : en force, passage en stop une fois la durée min atteinte (comportement 3.x, non demandé par la spec) ; assistant UI : p_offset arrondi à l'entier, ordre indx0/resetecopv/v_calib de l'ancien assistant ; UI non testée en navigateur
 2026-10-23 10:09 | revue sécurité | seul point : X-MaxPV sans authentification, statu quo P1-1
+2026-10-23 10:09 | PR | #9 existante (arrêt partiel précédent) mise à jour, marqueurs supprimés
