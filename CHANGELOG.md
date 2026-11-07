@@ -3,6 +3,13 @@
 Toutes les évolutions notables de MaxPV! sont consignées ici, au format [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 Trois numéros de version sont indépendants : MaxPV! (firmware du Wemos), site Web (interface embarquée) et EcoPV (firmware de l'Arduino Nano).
 
+## [4.0.1] - 2026-11-07
+
+Versions : MaxPV! 4.0.1, site Web 4.0.0, EcoPV 3.6.1.
+
+### Corrigé
+- Autodiscovery Home Assistant : le `step` de `V_CALIB`, `P_CALIB` et `CNT_CALIB` passe de 0.0001 à 0.001 (minimum accepté par Home Assistant, qui refusait ces entités à chaque démarrage). Les commandes restent acceptées avec 4 décimales.
+
 ## [4.0.0] - 2026-10-23
 
 Versions : MaxPV! 4.0.0, site Web 4.0.0, EcoPV 3.6.1. **Rupture avec la 3.x** : voir [la migration](docs/installation.md#migration-depuis-la-3x).

@@ -220,7 +220,7 @@ void test_number_entities_bounds_and_step() {
     TEST_ASSERT_EQUAL_DOUBLE(PARAM_MIN[k], doc["min"].as<double>());
     TEST_ASSERT_EQUAL_DOUBLE(PARAM_MAX[k], doc["max"].as<double>());
     bool fine = (k == 0 || k == 1 || k == 14);  // V_CALIB, P_CALIB, CNT_CALIB
-    TEST_ASSERT_EQUAL_DOUBLE(fine ? 0.0001 : 1.0, doc["step"].as<double>());
+    TEST_ASSERT_EQUAL_DOUBLE(fine ? 0.001 : 1.0, doc["step"].as<double>());
     TEST_ASSERT_EQUAL_STRING((std::string("{{ value_json.") + PARAM_KEYS[k] + " }}").c_str(), doc["val_tpl"] | "");
     TEST_ASSERT_EQUAL_STRING((std::string("maxpv/") + ID + "/" + PARAM_KEYS[k] + "/set").c_str(), doc["cmd_t"] | "");
   }
